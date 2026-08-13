@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TypingSpeed - Test Gõ Phím</title>
 
-    <!-- Google AdSense Code -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2159939441444456"
-         crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2159939441444456" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -85,7 +83,6 @@
                 </table>
             </div>
 
-            <!-- Phân Trang 4 Trang -->
             <div class="pagination">
                 <button onclick="changePage(1)" id="page-btn-1" class="page-btn active">1</button>
                 <button onclick="changePage(2)" id="page-btn-2" class="page-btn">2</button>
@@ -128,6 +125,28 @@
                         <span id="prof-current-rank" class="stat-value">-</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Section 4: ADMIN PANEL (Chỉ hiện cho locthinh52) -->
+        <div id="section-admin" class="card hidden">
+            <div class="card-header">
+                <h2 style="color: #eab308;"><i class="fa-solid fa-user-shield"></i> Quản Lý Hệ Thống (Admin)</h2>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên tài khoản</th>
+                            <th>Email</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-body">
+                        <tr><td colspan="4" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
