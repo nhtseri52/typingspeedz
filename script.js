@@ -1,4 +1,5 @@
-const API_BASE = "http://typingspeed.gamer.gd/api.php";
+// Dùng proxy HTTPS chuẩn để sửa lỗi Mixed Content giữa Vercel (HTTPS) và InfinityFree (HTTP)
+const API_BASE = "https://corsproxy.io/?" + encodeURIComponent("http://typingspeed.gamer.gd/api.php");
 
 const wordListVi = [
     "công", "nghệ", "thông", "tin", "lập", "trình", "máy", "tính", "bàn", "phím", "chuột", "màn", "hình", 
@@ -7,6 +8,7 @@ const wordListVi = [
     "dữ", "liệu", "mã", "nguồn", "mở", "thuật", "toán", "hệ", "điều", "hành", "máy", "chủ", "đó", "đây", "kia", 
     "người", "ta", "anh", "em", "bạn", "bè", "gia", "đình", "hạnh", "phúc", "vui", "vẻ", "thành", "công"
 ];
+// (Các phần bên dưới giữ nguyên như cũ)
 
 const wordListEn = [
     "technology", "computer", "keyboard", "mouse", "screen", "developer", "software", "hardware", 
