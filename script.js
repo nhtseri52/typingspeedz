@@ -61,7 +61,7 @@ function resetGame() {
     document.getElementById("word-input").disabled = false;
 
     words = [];
-    generateMoreWords(60);
+    generateMoreWords(100);
     renderWords();
 }
 
@@ -112,14 +112,16 @@ function handleTyping(e) {
 
         currentWordIndex++;
 
-        if (currentWordIndex >= words.length - 10) {
-            generateMoreWords(40);
+        if (currentWordIndex >= words.length - 20) {
+            generateMoreWords(50);
             renderWords();
-            return;
         }
 
         if (currentWordIndex < wordSpans.length) {
-            wordSpans[currentWordIndex].classList.add("current");
+            const nextWord = wordSpans[currentWordIndex];
+            nextWord.classList.add("current");
+            // Tự động cuộn xuống khi gõ sang dòng mới
+            nextWord.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         e.target.value = "";
@@ -196,7 +198,7 @@ async function handleAuth(e) {
             msg.innerText = data.message || "Có lỗi xảy ra!";
         }
     } catch (err) {
-        msg.innerText = "Lỗi kết nối!";
+        msg.innerText = "Không thể kết nối đến máy chủ!";
     }
 }
 
