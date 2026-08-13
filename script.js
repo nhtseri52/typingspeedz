@@ -1,5 +1,4 @@
-// Dùng proxy HTTPS chuẩn để sửa lỗi Mixed Content giữa Vercel (HTTPS) và InfinityFree (HTTP)
-const API_BASE = "https://corsproxy.io/?" + encodeURIComponent("http://typingspeed.gamer.gd/api.php");
+const API_BASE = "/api";
 
 const wordListVi = [
     "công", "nghệ", "thông", "tin", "lập", "trình", "máy", "tính", "bàn", "phím", "chuột", "màn", "hình", 
