@@ -1,5 +1,5 @@
 // Đường dẫn kết nối API lấy dữ liệu
-const API_BASE = "https://typingspeed.gamer.gd/api.php";
+const API_BASE = "https://typingspeedz.vercel.app";
 
 const wordListVi = ["nhà", "xe", "máy", "báo", "trường", "lớp", "học", "sinh", "sách", "vở", "bút", "thước", "máy", "tính", "điện", "thoại", "mạng", "xã", "hội", "lập", "trình", "mã", "nguồn", "dữ", "liệu", "phát", "triển", "công", "nghệ", "thông", "tin", "bàn", "phím", "chuột", "màn", "hình", "tai", "nghe"];
 const wordListEn = ["house", "car", "school", "student", "book", "pen", "computer", "phone", "network", "code", "data", "develop", "tech", "keyboard", "mouse", "screen", "audio", "system", "program", "game", "speed", "test", "type"];
