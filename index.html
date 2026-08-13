@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TypingSpeed - Test Gõ Phím</title>
+    <!-- Thẻ quan trọng để sửa lỗi kết nối SSL/Mixed Content -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2159939441444456" crossorigin="anonymous"></script>
 
@@ -42,7 +44,7 @@
             </button>
         </div>
 
-        <!-- Section 1: Typing -->
+        <!-- Section 1: Typing (Giao diện cũ xịn xò) -->
         <div id="section-typing" class="card">
             <div class="card-header">
                 <h2><i class="fa-solid fa-keyboard"></i> Luyện Gõ Phím</h2>
@@ -84,10 +86,10 @@
             </div>
 
             <div class="pagination">
-                <button onclick="changePage(1)" id="page-btn-1" class="page-btn active">1</button>
-                <button onclick="changePage(2)" id="page-btn-2" class="page-btn">2</button>
-                <button onclick="changePage(3)" id="page-btn-3" class="page-btn">3</button>
-                <button onclick="changePage(4)" id="page-btn-4" class="page-btn">4</button>
+                <button onclick="loadLeaderboard(1)" id="page-btn-1" class="page-btn active">1</button>
+                <button onclick="loadLeaderboard(2)" id="page-btn-2" class="page-btn">2</button>
+                <button onclick="loadLeaderboard(3)" id="page-btn-3" class="page-btn">3</button>
+                <button onclick="loadLeaderboard(4)" id="page-btn-4" class="page-btn">4</button>
             </div>
         </div>
 
@@ -125,28 +127,6 @@
                         <span id="prof-current-rank" class="stat-value">-</span>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Section 4: ADMIN PANEL (Chỉ hiện cho locthinh52) -->
-        <div id="section-admin" class="card hidden">
-            <div class="card-header">
-                <h2 style="color: #eab308;"><i class="fa-solid fa-user-shield"></i> Quản Lý Hệ Thống (Admin)</h2>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên tài khoản</th>
-                            <th>Email</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-users-body">
-                        <tr><td colspan="4" style="text-align:center;">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
