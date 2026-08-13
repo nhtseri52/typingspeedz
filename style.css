@@ -1,367 +1,373 @@
-// Dùng proxy HTTPS của Corsproxy để tránh bị Vercel chặn kết nối
-const API_BASE = "https://corsproxy.io/?" + encodeURIComponent("http://typingspeed.gamer.gd/api.php");
-
-// Kho từ vựng Tiếng Việt siêu phong phú
-const wordListVi = [
-    "công", "nghệ", "thông", "tin", "lập", "trình", "máy", "tính", "bàn", "phím", "chuột", "màn", "hình", 
-    "tai", "nghe", "học", "sinh", "sinh", "viên", "trường", "lớp", "thầy", "cô", "sách", "vở", "bút", "thước", 
-    "nhà", "xe", "máy", "điện", "thoại", "mạng", "xã", "hội", "báo", "chí", "phát", "triển", "phần", "mềm", 
-    "dữ", "liệu", "mã", "nguồn", "mở", "thuật", "toán", "hệ", "điều", "hành", "máy", "chủ", "đó", "đây", "kia", 
-    "người", "ta", "anh", "em", "bạn", "bè", "gia", "đình", "hạnh", "phúc", "vui", "vẻ", "thành", "công", 
-    "nỗ", "lực", "cố", "gắng", "ước", "mơ", "tương", "lai", "khát", "vọng", "đam", "mê", "sáng", "tạo", "đổi", "mới",
-    "thời", "gian", "không", "gian", "vũ", "trụ", "mặt", "trời", "mặt", "trăng", "ngôi", "sao", "trái", "đất", 
-    "con", "sông", "ngọn", "núi", "cánh", "đồng", "thành", "phố", "quê", "hương", "đất", "nước", "quốc", "gia", 
-    "văn", "hóa", "lịch", "sử", "khoa", "học", "kỹ", "thuật", "kinh", "tế", "xã", "hội", "tự", "do", "độc", "lập"
-];
-
-const wordListEn = [
-    "technology", "computer", "keyboard", "mouse", "screen", "developer", "software", "hardware", 
-    "program", "code", "data", "system", "network", "internet", "website", "application", "mobile", 
-    "phone", "student", "teacher", "school", "university", "book", "pencil", "paper", "learning", 
-    "future", "freedom", "success", "dream", "passion", "creativity", "innovation", "science", 
-    "knowledge", "power", "history", "world", "country", "city", "river", "mountain", "ocean"
-];
-
-let words = [];
-let currentWordIndex = 0;
-let correctCount = 0;
-let incorrectCount = 0;
-let timeLeft = 60;
-let timer = null;
-let isPlaying = false;
-let authMode = 'login';
-let currentUser = null;
-let currentPage = 1;
-
-document.addEventListener("DOMContentLoaded", () => {
-    checkLoggedInUser();
-    resetGame();
-
-    document.getElementById("word-input").addEventListener("input", handleTyping);
-    document.getElementById("lang-select").addEventListener("change", resetGame);
-});
-
-function switchSection(section) {
-    document.querySelectorAll(".tab-item").forEach(btn => btn.classList.remove("active"));
-    const activeTab = document.getElementById(`btn-tab-${section}`);
-    if (activeTab) activeTab.classList.add("active");
-
-    document.getElementById("section-typing").classList.add("hidden");
-    document.getElementById("section-leaderboard").classList.add("hidden");
-    document.getElementById("section-profile").classList.add("hidden");
-    const adminSec = document.getElementById("section-admin");
-    if (adminSec) adminSec.classList.add("hidden");
-
-    document.getElementById(`section-${section}`).classList.remove("hidden");
-
-    if (section === 'leaderboard') loadLeaderboard(currentPage);
-    if (section === 'profile') loadProfile();
-    if (section === 'admin') loadAdminPanel();
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-function resetGame() {
-    clearInterval(timer);
-    isPlaying = false;
-    timeLeft = 60;
-    currentWordIndex = 0;
-    correctCount = 0;
-    incorrectCount = 0;
-
-    document.getElementById("timer").innerText = "60s";
-    document.getElementById("word-input").value = "";
-    document.getElementById("word-input").disabled = false;
-
-    words = [];
-    generateMoreWords(100);
-    renderWords();
+body {
+    background-color: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
 }
 
-// Hàm thêm từ mới liên tục không bao giờ bị hết từ khi gõ siêu nhanh
-function generateMoreWords(count) {
-    const lang = document.getElementById("lang-select").value;
-    const baseList = lang === "vi" ? wordListVi : wordListEn;
-    for (let i = 0; i < count; i++) {
-        words.push(baseList[Math.floor(Math.random() * baseList.length)]);
-    }
+.header {
+    background-color: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 15px 0;
 }
 
-function renderWords() {
-    const display = document.getElementById("words-display");
-    display.innerHTML = "";
-    words.forEach((w, idx) => {
-        const span = document.createElement("span");
-        span.className = "word";
-        if (idx === currentWordIndex) span.classList.add("current");
-        span.innerText = w;
-        display.appendChild(span);
-    });
+.nav-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-function handleTyping(e) {
-    const val = e.target.value;
-
-    if (!isPlaying && val.length > 0) {
-        isPlaying = true;
-        timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById("timer").innerText = `${timeLeft}s`;
-            if (timeLeft <= 0) endGame();
-        }, 1000);
-    }
-
-    if (val.endsWith(" ")) {
-        const typedWord = val.trim();
-        const currentWord = words[currentWordIndex];
-        const wordSpans = document.querySelectorAll(".words-display .word");
-
-        if (typedWord === currentWord) {
-            wordSpans[currentWordIndex].className = "word correct";
-            correctCount++;
-        } else {
-            wordSpans[currentWordIndex].className = "word incorrect";
-            incorrectCount++;
-        }
-
-        currentWordIndex++;
-        
-        // Tự tạo thêm 50 từ nữa nếu người dùng sắp gõ hết từ
-        if (currentWordIndex >= words.length - 10) {
-            generateMoreWords(50);
-            renderWords();
-            return;
-        }
-
-        if (currentWordIndex < wordSpans.length) {
-            wordSpans[currentWordIndex].classList.add("current");
-        }
-
-        e.target.value = "";
-    }
+.logo {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #38bdf8;
 }
 
-function endGame() {
-    clearInterval(timer);
-    document.getElementById("word-input").disabled = true;
-
-    const wpm = correctCount;
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? Math.round((correctCount / total) * 100) : 0;
-
-    document.getElementById("res-wpm").innerText = wpm;
-    document.getElementById("res-acc").innerText = `${accuracy}%`;
-
-    document.getElementById("result-modal").classList.remove("hidden");
-
-    if (currentUser) {
-        saveScore(wpm, accuracy);
-    } else {
-        document.getElementById("rank-display").innerText = "Hạng: Đăng nhập để lưu điểm";
-    }
+.nav-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
 }
 
-function closeResult() {
-    document.getElementById("result-modal").classList.add("hidden");
-    resetGame();
+#lang-select {
+    background: #0f172a;
+    color: #fff;
+    border: 1px solid #334155;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-function openAuth() { document.getElementById("auth-modal").classList.remove("hidden"); }
-function closeAuth() { document.getElementById("auth-modal").classList.add("hidden"); }
-
-function setAuthMode(mode) {
-    authMode = mode;
-    document.getElementById("tab-login").classList.toggle("active", mode === 'login');
-    document.getElementById("tab-register").classList.toggle("active", mode === 'register');
-    document.getElementById("auth-email").classList.toggle("hidden", mode === 'login');
-    document.getElementById("auth-confirm-password").classList.toggle("hidden", mode === 'login');
-    document.getElementById("auth-submit").innerText = mode === 'login' ? "Đăng nhập" : "Đăng ký";
+.btn-discord {
+    background: #5865F2;
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 500;
 }
 
-async function handleAuth(e) {
-    e.preventDefault();
-    const user = document.getElementById("auth-username").value;
-    const pass = document.getElementById("auth-password").value;
-    const email = document.getElementById("auth-email").value;
-    const confirmPass = document.getElementById("auth-confirm-password").value;
-    const msg = document.getElementById("auth-msg");
-
-    if (authMode === 'register' && pass !== confirmPass) {
-        msg.innerText = "Mật khẩu nhập lại không khớp!";
-        return;
-    }
-
-    const action = authMode === 'login' ? 'login' : 'register';
-    const body = { action, username: user, password: pass, email };
-
-    try {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-        });
-        const data = await res.json();
-
-        if (data.status === "success") {
-            currentUser = data.user;
-            localStorage.setItem("typing_user", JSON.stringify(currentUser));
-            updateUserUI();
-            closeAuth();
-        } else {
-            msg.innerText = data.message || "Có lỗi xảy ra!";
-        }
-    } catch (err) {
-        msg.innerText = "Lỗi kết nối máy chủ!";
-    }
+.btn-primary {
+    background: #0284c7;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
 }
 
-function checkLoggedInUser() {
-    const saved = localStorage.getItem("typing_user");
-    if (saved) {
-        currentUser = JSON.parse(saved);
-        updateUserUI();
-    }
+.btn-primary:hover {
+    background: #0369a1;
 }
 
-function updateUserUI() {
-    const area = document.getElementById("user-area");
-    const tabs = document.querySelector(".main-tabs");
-
-    if (currentUser) {
-        area.innerHTML = `<span style="color:#38bdf8; font-weight:600;"><i class="fa-solid fa-user"></i> ${currentUser.username}</span> <button class="btn-primary" style="background:#ef4444;" onclick="logout()">Thoát</button>`;
-        
-        // Hiện tab Admin nếu là tài khoản locthinh52
-        if (currentUser.username === 'locthinh52') {
-            if (!document.getElementById("btn-tab-admin")) {
-                const btn = document.createElement("button");
-                btn.id = "btn-tab-admin";
-                btn.className = "tab-item";
-                btn.style.borderColor = "#eab308";
-                btn.style.color = "#eab308";
-                btn.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin Panel`;
-                btn.onclick = () => switchSection('admin');
-                tabs.appendChild(btn);
-            }
-        }
-    } else {
-        area.innerHTML = `<button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>`;
-        const adminBtn = document.getElementById("btn-tab-admin");
-        if (adminBtn) adminBtn.remove();
-    }
+.app-wrap {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 20px;
 }
 
-function logout() {
-    currentUser = null;
-    localStorage.removeItem("typing_user");
-    updateUserUI();
-    switchSection('typing');
+.main-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-async function saveScore(wpm, accuracy) {
-    try {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "save_score", user_id: currentUser.id, wpm, accuracy })
-        });
-        const data = await res.json();
-        if (data.rank) {
-            document.getElementById("rank-display").innerText = `Hạng của bạn: Top ${data.rank}`;
-        }
-    } catch (err) {}
+.tab-item {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
 }
 
-async function loadLeaderboard(page) {
-    currentPage = page;
-    document.querySelectorAll(".page-btn").forEach((b, i) => b.classList.toggle("active", i + 1 === page));
-
-    const tbody = document.getElementById("leaderboard-body");
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>`;
-
-    try {
-        const res = await fetch(`${API_BASE}&action=get_leaderboard&page=${page}`);
-        const list = await res.json();
-
-        tbody.innerHTML = "";
-        list.forEach((item, idx) => {
-            const rank = (page - 1) * 25 + idx + 1;
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>#${rank}</strong></td>
-                    <td>🇻🇳 VN</td>
-                    <td>${item.username}</td>
-                    <td><strong style="color:#22c55e;">${item.wpm}</strong> WPM</td>
-                    <td>${item.accuracy}%</td>
-                </tr>
-            `;
-        });
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Không tải được dữ liệu!</td></tr>`;
-    }
+.tab-item.active {
+    background: #0284c7;
+    color: white;
+    border-color: #0284c7;
 }
 
-async function loadProfile() {
-    if (!currentUser) {
-        document.getElementById("profile-not-login").classList.remove("hidden");
-        document.getElementById("profile-content").classList.add("hidden");
-        return;
-    }
-
-    document.getElementById("profile-not-login").classList.add("hidden");
-    document.getElementById("profile-content").classList.remove("hidden");
-
-    document.getElementById("prof-username").innerText = currentUser.username;
-    document.getElementById("prof-created").innerText = currentUser.created_at || "Vừa xong";
-
-    try {
-        const res = await fetch(`${API_BASE}&action=get_profile&user_id=${currentUser.id}`);
-        const data = await res.json();
-
-        document.getElementById("prof-max-wpm").innerText = data.max_wpm || 0;
-        document.getElementById("prof-min-wpm").innerText = data.min_wpm || 0;
-        document.getElementById("prof-best-rank").innerText = data.best_rank ? `#${data.best_rank}` : "-";
-        document.getElementById("prof-current-rank").innerText = data.current_rank ? `#${data.current_rank}` : "-";
-    } catch (err) {}
+.card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid #334155;
 }
 
-// TÍNH NĂNG ADMIN PANEL DÀNH CHO LOCTHINH52
-async function loadAdminPanel() {
-    const tbody = document.getElementById("admin-users-body");
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải dữ liệu người dùng...</td></tr>`;
-
-    try {
-        const res = await fetch(`${API_BASE}&action=admin_get_users&admin_id=${currentUser.id}`);
-        const list = await res.json();
-
-        tbody.innerHTML = "";
-        list.forEach(u => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${u.id}</td>
-                    <td><strong>${u.username}</strong></td>
-                    <td>${u.email || '-'}</td>
-                    <td>
-                        <button onclick="adminDeleteUser(${u.id})" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Xóa</button>
-                    </td>
-                </tr>
-            `;
-        });
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444;">Không thể tải danh sách Admin!</td></tr>`;
-    }
+.hidden {
+    display: none !important;
 }
 
-async function adminDeleteUser(userId) {
-    if (!confirm("Bạn có chắc muốn xóa tài khoản người dùng này khỏi hệ thống?")) return;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-    try {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "admin_delete_user", admin_id: currentUser.id, target_user_id: userId })
-        });
-        const data = await res.json();
-        alert(data.message);
-        loadAdminPanel();
-    } catch (err) {
-        alert("Xóa thất bại!");
-    }
+.timer-badge {
+    background: #38bdf8;
+    color: #0f172a;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 1.1rem;
+}
+
+.words-wrapper {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 120px;
+    margin-bottom: 20px;
+    border: 1px solid #334155;
+}
+
+.words-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 1.3rem;
+    line-height: 1.6;
+}
+
+.word {
+    color: #64748b;
+}
+
+.word.current {
+    color: #38bdf8;
+    text-decoration: underline;
+}
+
+.word.correct {
+    color: #22c55e;
+}
+
+.word.incorrect {
+    color: #ef4444;
+}
+
+.input-row {
+    display: flex;
+    gap: 15px;
+}
+
+#word-input {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 12px 18px;
+    color: white;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    outline: none;
+}
+
+#word-input:focus {
+    border-color: #38bdf8;
+}
+
+.btn-reload {
+    background: #475569;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Leaderboard */
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+}
+
+th {
+    background: #0f172a;
+    color: #94a3b8;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.page-btn {
+    background: #0f172a;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.page-btn.active {
+    background: #0284c7;
+    color: white;
+}
+
+/* Profile */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-title {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.stat-card.green .stat-value { color: #22c55e; }
+.stat-card.red .stat-value { color: #ef4444; }
+.stat-card.gold .stat-value { color: #eab308; }
+.stat-card.blue .stat-value { color: #38bdf8; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    border: 1px solid #334155;
+}
+
+.close-x {
+    position: absolute;
+    top: 15px; right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+.tab-header {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #334155;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.tab-btn.active {
+    color: #38bdf8;
+    border-bottom: 2px solid #38bdf8;
+}
+
+#auth-form input {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 10px 14px;
+    color: white;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+.btn-full {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.err-msg {
+    color: #ef4444;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+.forgot-box {
+    margin-top: 15px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.forgot-box a {
+    color: #38bdf8;
+}
+
+.score-grid {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.score-card {
+    flex: 1;
+    background: #0f172a;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.score-val {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #22c55e;
+}
+
+.score-lbl {
+    font-size: 0.85rem;
+    color: #94a3b8;
 }
