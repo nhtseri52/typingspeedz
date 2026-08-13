@@ -1,4 +1,4 @@
-// Cấu hình kết nối API backend trên Host cũ
+// Đường dẫn kết nối API lấy dữ liệu
 const API_BASE = "https://typingspeed.gamer.gd/api.php";
 
 const wordListVi = ["nhà", "xe", "máy", "báo", "trường", "lớp", "học", "sinh", "sách", "vở", "bút", "thước", "máy", "tính", "điện", "thoại", "mạng", "xã", "hội", "lập", "trình", "mã", "nguồn", "dữ", "liệu", "phát", "triển", "công", "nghệ", "thông", "tin", "bàn", "phím", "chuột", "màn", "hình", "tai", "nghe"];
@@ -15,7 +15,6 @@ let authMode = 'login';
 let currentUser = null;
 let currentPage = 1;
 
-// Khởi chạy khi load trang
 document.addEventListener("DOMContentLoaded", () => {
     checkLoggedInUser();
     resetGame();
@@ -131,7 +130,6 @@ function closeResult() {
     resetGame();
 }
 
-// Auth Logic
 function openAuth() { document.getElementById("auth-modal").classList.remove("hidden"); }
 function closeAuth() { document.getElementById("auth-modal").classList.add("hidden"); }
 
