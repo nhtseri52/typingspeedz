@@ -1,25 +1,16 @@
-// Bỏ proxy đi, gọi thẳng domain InfinityFree của bạn
 const API_BASE = "http://typingspeed.gamer.gd/api.php";
 
-// Kho từ vựng Tiếng Việt siêu phong phú
 const wordListVi = [
     "công", "nghệ", "thông", "tin", "lập", "trình", "máy", "tính", "bàn", "phím", "chuột", "màn", "hình", 
     "tai", "nghe", "học", "sinh", "sinh", "viên", "trường", "lớp", "thầy", "cô", "sách", "vở", "bút", "thước", 
     "nhà", "xe", "máy", "điện", "thoại", "mạng", "xã", "hội", "báo", "chí", "phát", "triển", "phần", "mềm", 
     "dữ", "liệu", "mã", "nguồn", "mở", "thuật", "toán", "hệ", "điều", "hành", "máy", "chủ", "đó", "đây", "kia", 
-    "người", "ta", "anh", "em", "bạn", "bè", "gia", "đình", "hạnh", "phúc", "vui", "vẻ", "thành", "công", 
-    "nỗ", "lực", "cố", "gắng", "ước", "mơ", "tương", "lai", "khát", "vọng", "đam", "mê", "sáng", "tạo", "đổi", "mới",
-    "thời", "gian", "không", "gian", "vũ", "trụ", "mặt", "trời", "mặt", "trăng", "ngôi", "sao", "trái", "đất", 
-    "con", "sông", "ngọn", "núi", "cánh", "đồng", "thành", "phố", "quê", "hương", "đất", "nước", "quốc", "gia", 
-    "văn", "hóa", "lịch", "sử", "khoa", "học", "kỹ", "thuật", "kinh", "tế", "xã", "hội", "tự", "do", "độc", "lập"
+    "người", "ta", "anh", "em", "bạn", "bè", "gia", "đình", "hạnh", "phúc", "vui", "vẻ", "thành", "công"
 ];
 
 const wordListEn = [
     "technology", "computer", "keyboard", "mouse", "screen", "developer", "software", "hardware", 
-    "program", "code", "data", "system", "network", "internet", "website", "application", "mobile", 
-    "phone", "student", "teacher", "school", "university", "book", "pencil", "paper", "learning", 
-    "future", "freedom", "success", "dream", "passion", "creativity", "innovation", "science", 
-    "knowledge", "power", "history", "world", "country", "city", "river", "mountain", "ocean"
+    "program", "code", "data", "system", "network", "internet", "website", "application", "mobile"
 ];
 
 let words = [];
@@ -49,14 +40,12 @@ function switchSection(section) {
     document.getElementById("section-typing").classList.add("hidden");
     document.getElementById("section-leaderboard").classList.add("hidden");
     document.getElementById("section-profile").classList.add("hidden");
-    const adminSec = document.getElementById("section-admin");
-    if (adminSec) adminSec.classList.add("hidden");
 
-    document.getElementById(`section-${section}`).classList.remove("hidden");
+    const sec = document.getElementById(`section-${section}`);
+    if(sec) sec.classList.remove("hidden");
 
     if (section === 'leaderboard') loadLeaderboard(currentPage);
     if (section === 'profile') loadProfile();
-    if (section === 'admin') loadAdminPanel();
 }
 
 function resetGame() {
@@ -72,11 +61,10 @@ function resetGame() {
     document.getElementById("word-input").disabled = false;
 
     words = [];
-    generateMoreWords(100);
+    generateMoreWords(60);
     renderWords();
 }
 
-// Hàm thêm từ mới liên tục không bao giờ bị hết từ khi gõ siêu nhanh
 function generateMoreWords(count) {
     const lang = document.getElementById("lang-select").value;
     const baseList = lang === "vi" ? wordListVi : wordListEn;
@@ -123,10 +111,9 @@ function handleTyping(e) {
         }
 
         currentWordIndex++;
-        
-        // Tự tạo thêm 50 từ nữa nếu người dùng sắp gõ hết từ
+
         if (currentWordIndex >= words.length - 10) {
-            generateMoreWords(50);
+            generateMoreWords(40);
             renderWords();
             return;
         }
@@ -209,7 +196,7 @@ async function handleAuth(e) {
             msg.innerText = data.message || "Có lỗi xảy ra!";
         }
     } catch (err) {
-        msg.innerText = "Lỗi kết nối máy chủ!";
+        msg.innerText = "Lỗi kết nối!";
     }
 }
 
@@ -223,28 +210,10 @@ function checkLoggedInUser() {
 
 function updateUserUI() {
     const area = document.getElementById("user-area");
-    const tabs = document.querySelector(".main-tabs");
-
     if (currentUser) {
         area.innerHTML = `<span style="color:#38bdf8; font-weight:600;"><i class="fa-solid fa-user"></i> ${currentUser.username}</span> <button class="btn-primary" style="background:#ef4444;" onclick="logout()">Thoát</button>`;
-        
-        // Hiện tab Admin nếu là tài khoản locthinh52
-        if (currentUser.username === 'locthinh52') {
-            if (!document.getElementById("btn-tab-admin")) {
-                const btn = document.createElement("button");
-                btn.id = "btn-tab-admin";
-                btn.className = "tab-item";
-                btn.style.borderColor = "#eab308";
-                btn.style.color = "#eab308";
-                btn.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin Panel`;
-                btn.onclick = () => switchSection('admin');
-                tabs.appendChild(btn);
-            }
-        }
     } else {
         area.innerHTML = `<button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>`;
-        const adminBtn = document.getElementById("btn-tab-admin");
-        if (adminBtn) adminBtn.remove();
     }
 }
 
@@ -277,7 +246,7 @@ async function loadLeaderboard(page) {
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>`;
 
     try {
-        const res = await fetch(`${API_BASE}&action=get_leaderboard&page=${page}`);
+        const res = await fetch(`${API_BASE}?action=get_leaderboard&page=${page}`);
         const list = await res.json();
 
         tbody.innerHTML = "";
@@ -312,7 +281,7 @@ async function loadProfile() {
     document.getElementById("prof-created").innerText = currentUser.created_at || "Vừa xong";
 
     try {
-        const res = await fetch(`${API_BASE}&action=get_profile&user_id=${currentUser.id}`);
+        const res = await fetch(`${API_BASE}?action=get_profile&user_id=${currentUser.id}`);
         const data = await res.json();
 
         document.getElementById("prof-max-wpm").innerText = data.max_wpm || 0;
@@ -320,48 +289,4 @@ async function loadProfile() {
         document.getElementById("prof-best-rank").innerText = data.best_rank ? `#${data.best_rank}` : "-";
         document.getElementById("prof-current-rank").innerText = data.current_rank ? `#${data.current_rank}` : "-";
     } catch (err) {}
-}
-
-// TÍNH NĂNG ADMIN PANEL DÀNH CHO LOCTHINH52
-async function loadAdminPanel() {
-    const tbody = document.getElementById("admin-users-body");
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Đang tải dữ liệu người dùng...</td></tr>`;
-
-    try {
-        const res = await fetch(`${API_BASE}&action=admin_get_users&admin_id=${currentUser.id}`);
-        const list = await res.json();
-
-        tbody.innerHTML = "";
-        list.forEach(u => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${u.id}</td>
-                    <td><strong>${u.username}</strong></td>
-                    <td>${u.email || '-'}</td>
-                    <td>
-                        <button onclick="adminDeleteUser(${u.id})" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Xóa</button>
-                    </td>
-                </tr>
-            `;
-        });
-    } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#ef4444;">Không thể tải danh sách Admin!</td></tr>`;
-    }
-}
-
-async function adminDeleteUser(userId) {
-    if (!confirm("Bạn có chắc muốn xóa tài khoản người dùng này khỏi hệ thống?")) return;
-
-    try {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "admin_delete_user", admin_id: currentUser.id, target_user_id: userId })
-        });
-        const data = await res.json();
-        alert(data.message);
-        loadAdminPanel();
-    } catch (err) {
-        alert("Xóa thất bại!");
-    }
 }
