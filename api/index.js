@@ -1,8 +1,8 @@
-// Bộ dữ liệu tạm thời giả lập Database trên Serverless
+// Dữ liệu mẫu (Giả lập Database)
 let users = [
-    { id: 1, username: "admin", password: "123", email: "admin@gmail.com", created_at: "01/01/2026", role: "admin", max_wpm: 120, min_wpm: 45, best_rank: 1, current_rank: 1 },
-    { id: 2, username: "ProTypist", password: "123", email: "proplayer@gmail.com", created_at: "10/02/2026", role: "user", max_wpm: 105, min_wpm: 50, best_rank: 2, current_rank: 2 },
-    { id: 3, username: "GamerVN", password: "123", email: "gamervn@gmail.com", created_at: "15/03/2026", role: "user", max_wpm: 90, min_wpm: 30, best_rank: 3, current_rank: 3 }
+    { id: 1, username: "thanhnguyen", password: "123", email: "admin@gmail.com", country: "🇻🇳", created_at: "01/01/2026", role: "admin", max_wpm: 50, min_wpm: 45, best_rank: 2, current_rank: 1 },
+    { id: 2, username: "longcr7", password: "123", email: "proplayer@gmail.com", country: "🇺🇸", created_at: "10/02/2026", role: "user", max_wpm: 55, min_wpm: 50, best_rank: 1, current_rank: 2 },
+    { id: 3, username: "huy", password: "123", email: "gamervn@gmail.com", country: "🇻🇳", created_at: "15/03/2026", role: "user", max_wpm: 42, min_wpm: 30, best_rank: 3, current_rank: 3 }
 ];
 
 export default async function handler(req, res) {
@@ -20,15 +20,16 @@ export default async function handler(req, res) {
     const query = req.query || {};
     const action = query.action || body.action;
 
-    // 1. Đăng ký / Đăng nhập
+    // Đăng nhập
     if (action === 'login') {
         const u = users.find(x => x.username === body.username && x.password === body.password);
         if (u) {
             return res.status(200).json({ status: "success", user: u });
         }
-        return res.status(400).json({ status: "error", message: "Tài khoản hoặc mật khẩu không đúng!" });
+        return res.status(400).json({ status: "error", message: "Mật khẩu hoặc tên tài khoản không chính xác!" });
     }
 
+    // Đăng ký
     if (action === 'register') {
         const exists = users.find(x => x.username === body.username);
         if (exists) return res.status(400).json({ status: "error", message: "Tên tài khoản đã tồn tại!" });
@@ -38,6 +39,7 @@ export default async function handler(req, res) {
             username: body.username,
             password: body.password,
             email: body.email || "",
+            country: body.country || "🇻🇳",
             created_at: new Date().toLocaleDateString('vi-VN'),
             role: "user",
             max_wpm: 0,
@@ -49,7 +51,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: "success", user: newUser });
     }
 
-    // 2. Lưu điểm & Tính toán Hạng Cao Nhất (Sửa lỗi Best Rank)
+    // Lưu điểm & Tính hạng
     if (action === 'save_score') {
         const u = users.find(x => x.id == body.user_id);
         if (u) {
@@ -57,7 +59,7 @@ export default async function handler(req, res) {
             if (wpm > u.max_wpm) u.max_wpm = wpm;
             if (u.min_wpm === 0 || wpm < u.min_wpm) u.min_wpm = wpm;
 
-            // Tính lại hạng dựa trên WPM cao nhất
+            // Tính toán lại Bảng xếp hạng
             users.sort((a, b) => b.max_wpm - a.max_wpm);
             users.forEach((usr, idx) => {
                 const currentRank = idx + 1;
@@ -71,10 +73,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ status: "error" });
     }
 
-    // 3. Đổi mật khẩu
+    // Đổi mật khẩu
     if (action === 'change_password') {
         const u = users.find(x => x.id == body.user_id);
-        if (!u) return res.status(400).json({ status: "error", message: "Không tìm thấy người dùng!" });
+        if (!u) return res.status(400).json({ status: "error", message: "Tài khoản không tồn tại!" });
 
         if (u.password !== body.old_password) {
             return res.status(400).json({ status: "error", message: "Mật khẩu cũ không chính xác!" });
@@ -84,20 +86,20 @@ export default async function handler(req, res) {
         return res.status(200).json({ status: "success", message: "Đổi mật khẩu thành công!" });
     }
 
-    // 4. Lấy Profile người dùng
+    // Lấy thông tin Hồ sơ
     if (action === 'get_profile') {
         const u = users.find(x => x.id == query.user_id);
         if (u) return res.status(200).json(u);
         return res.status(404).json({ message: "Not found" });
     }
 
-    // 5. Bảng xếp hạng
+    // Bảng xếp hạng
     if (action === 'get_leaderboard') {
         const list = [...users].sort((a, b) => b.max_wpm - a.max_wpm);
         return res.status(200).json(list);
     }
 
-    // 6. Quản lý Admin
+    // Admin Quản lý
     if (action === 'admin_get_users') {
         return res.status(200).json(users);
     }
@@ -110,7 +112,7 @@ export default async function handler(req, res) {
             if (body.password) u.password = body.password;
             return res.status(200).json({ status: "success", message: "Cập nhật thành công!" });
         }
-        return res.status(400).json({ status: "error", message: "Lỗi cập nhật!" });
+        return res.status(400).json({ status: "error", message: "Cập nhật thất bại!" });
     }
 
     return res.status(200).json({ message: "API Active" });
