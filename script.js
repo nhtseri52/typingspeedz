@@ -43,7 +43,14 @@ const TRANSLATIONS = {
         lblRegEmail: "Email (không bắt buộc)",
         lblRegPass: "Mật khẩu",
         msgNoAcc: 'Chưa có tài khoản? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký ngay</a>',
-        profileGuest: 'Vui lòng <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a> để xem thông tin hồ sơ.'
+        profileGuest: 'Vui lòng <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a> để xem thông tin hồ sơ.',
+        profTitle: "Thông Tin Cá Nhân & Thành Tích",
+        profHighscore: "Tốc độ cao nhất",
+        profAvgAcc: "Độ chính xác TB",
+        profTotalTests: "Bài test đã hoàn thành",
+        profHistoryTitle: "Lịch Sử Luyện Tập",
+        profDate: "Thời gian",
+        profLoading: "Đang tải dữ liệu hồ sơ..."
     },
     en: {
         tabGame: '<i class="fa-solid fa-bolt me-2"></i>Typing Test',
@@ -72,7 +79,14 @@ const TRANSLATIONS = {
         lblRegEmail: "Email (optional)",
         lblRegPass: "Password",
         msgNoAcc: 'Don\'t have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register now</a>',
-        profileGuest: 'Please <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a> to view your profile.'
+        profileGuest: 'Please <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a> to view your profile.',
+        profTitle: "User Profile & Statistics",
+        profHighscore: "Highest Speed",
+        profAvgAcc: "Avg. Accuracy",
+        profTotalTests: "Tests Completed",
+        profHistoryTitle: "Practice History",
+        profDate: "Date",
+        profLoading: "Loading profile data..."
     }
 };
 
@@ -173,6 +187,7 @@ async function handleLogin() {
         localStorage.setItem("typing_user", JSON.stringify(currentUser));
         bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
         updateAuthUI();
+        renderProfile();
     } else {
         alert(data.message || "Failed!");
     }
@@ -195,6 +210,7 @@ async function handleRegister() {
         localStorage.setItem("typing_user", JSON.stringify(currentUser));
         bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
         updateAuthUI();
+        renderProfile();
         alert("Success!");
     } else {
         alert(data.message || "Failed!");
@@ -208,7 +224,8 @@ function logout() {
     renderProfile();
 }
 
-function renderProfile() {
+// XỬ LÝ RENDER CHI TIẾT HỒ SƠ + LỊCH SỬ BÀI TEST
+async function renderProfile() {
     const p = document.getElementById("profileContent");
     const t = TRANSLATIONS[currentLang];
 
@@ -216,11 +233,86 @@ function renderProfile() {
         p.innerHTML = `<p class="text-center py-4 text-muted">${t.profileGuest}</p>`;
         return;
     }
+
+    p.innerHTML = `<div class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>${t.profLoading}</div>`;
+
+    // Gọi API lấy thông tin chi tiết user và lịch sử gõ phím
+    let profileData = null;
+    try {
+        const res = await fetch(`${API_URL}?action=get_profile&user_id=${currentUser.id}`);
+        profileData = await res.json();
+    } catch (err) {
+        console.error(err);
+    }
+
+    const userData = profileData && profileData.user ? profileData.user : currentUser;
+    const history = profileData && profileData.history ? profileData.history : [];
+
+    let historyHtml = "";
+    if (history.length === 0) {
+        historyHtml = `<tr><td colspan="3" class="text-center text-muted py-3">${currentLang === 'vi' ? 'Chưa có lịch sử gõ' : 'No typing history yet'}</td></tr>`;
+    } else {
+        history.forEach(item => {
+            historyHtml += `
+                <tr>
+                    <td>${item.created_at || 'Recently'}</td>
+                    <td class="text-warning fw-bold">${item.wpm} WPM</td>
+                    <td class="text-info">${item.accuracy}%</td>
+                </tr>
+            `;
+        });
+    }
+
     p.innerHTML = `
-        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-info"></i>${currentLang === 'vi' ? 'Thông Tin Cá Nhân' : 'User Profile'}</h5>
-        <p><strong>${t.lblUser}:</strong> ${currentUser.username}</p>
-        <p><strong>Email:</strong> ${currentUser.email || 'N/A'}</p>
-        <p><strong>Highscore:</strong> <span class="text-warning fw-bold">${currentUser.max_wpm || 0} WPM</span></p>
+        <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                    ${userData.username.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">${userData.username}</h5>
+                    <small class="text-muted">${userData.email || 'No Email'}</small>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>${t.btnLogout}</button>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-4">
+                <div class="p-3 text-center rounded" style="background-color: #101216; border: 1px solid var(--card-border);">
+                    <small class="text-muted d-block mb-1">${t.profHighscore}</small>
+                    <span class="fs-3 fw-bold text-warning">${userData.max_wpm || 0}</span> <small class="text-muted">WPM</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-3 text-center rounded" style="background-color: #101216; border: 1px solid var(--card-border);">
+                    <small class="text-muted d-block mb-1">${t.profAvgAcc}</small>
+                    <span class="fs-3 fw-bold text-info">${userData.accuracy || 100}%</span>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="p-3 text-center rounded" style="background-color: #101216; border: 1px solid var(--card-border);">
+                    <small class="text-muted d-block mb-1">${t.profTotalTests}</small>
+                    <span class="fs-3 fw-bold text-success">${userData.total_tests || history.length || 0}</span>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>${t.profHistoryTitle}</h6>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr class="text-muted">
+                        <th>${t.profDate}</th>
+                        <th>${t.lblSpeed}</th>
+                        <th>${t.lblAcc}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${historyHtml}
+                </tbody>
+            </table>
+        </div>
     `;
 }
 
