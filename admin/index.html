@@ -19,6 +19,21 @@
     </style>
 </head>
 <body class="p-4">
+    <script>
+    // Đặt mật khẩu Admin của bạn tại đây (sửa '123456' thành mật khẩu bạn muốn)
+    const ADMIN_PASSWORD_SECRET = "locthinh52";
+
+    // Kiểm tra xem đã đăng nhập trước đó chưa
+    if (sessionStorage.getItem("admin_authenticated") !== "true") {
+        let pass = prompt("🔐 Nhập mật khẩu Quản Trị Viên:");
+        if (pass === ADMIN_PASSWORD_SECRET) {
+            sessionStorage.setItem("admin_authenticated", "true");
+        } else {
+            alert("❌ Sai mật khẩu! Bạn không có quyền truy cập.");
+            window.location.href = "/"; // Đẩy về trang chủ ngay lập tức
+        }
+    }
+</script>
 
     <div class="container-fluid">
         <!-- HEADER -->
