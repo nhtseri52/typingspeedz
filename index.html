@@ -2,205 +2,447 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TypingSpeed - Test Gõ Phím</title>
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypingSpeedZ - Luyện Tập Gõ Phím Nhanh</title>
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --correct-color: #4ade80;
+            --incorrect-color: #f87171;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar { background-color: var(--card-bg); border-bottom: 1px solid #334155; }
+        .card { background-color: var(--card-bg); border: 1px solid #334155; color: #fff; }
+        .modal-content { background-color: var(--card-bg); color: #fff; }
+        .form-control { background-color: #0f172a; border-color: #334155; color: #fff; }
+        .form-control:focus { background-color: #0f172a; color: #fff; border-color: var(--accent-color); }
+
+        /* KHU VỰC GÕ PHÍM */
+        .words-box {
+            font-size: 1.4rem;
+            line-height: 2rem;
+            height: 120px;
+            overflow: hidden;
+            user-select: none;
+            background-color: #0f172a;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #334155;
+            letter-spacing: 1px;
+        }
+
+        .word { display: inline-block; margin-right: 8px; border-radius: 3px; padding: 2px 4px; }
+        .letter.correct { color: var(--correct-color); }
+        .letter.incorrect { color: var(--incorrect-color); background-color: rgba(248, 113, 113, 0.2); }
+        .word.active { background-color: rgba(56, 189, 248, 0.2); }
+
+        #inputField {
+            font-size: 1.2rem;
+            background-color: #0f172a;
+            color: #fff;
+            border: 2px solid var(--accent-color);
+        }
+
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .table-dark { background-color: var(--card-bg); }
+    </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="nav-container">
-            <div class="logo"><i class="fa-solid fa-keyboard"></i> TypingSpeed</div>
-            <div class="nav-right">
-                <select id="lang-select">
-                    <option value="vi">🇻🇳 Tiếng Việt</option>
-                    <option value="en">🇬🇧 English</option>
-                </select>
-                <a href="https://discord.gg/3HRkTTYZWp" target="_blank" class="btn-discord" title="Nhóm Discord"><i class="fa-brands fa-discord"></i></a>
-                <div id="user-area">
-                    <button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>
-                </div>
+    <!-- NAVBAR HEADER -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-info fs-3" href="#"><i class="fa-solid fa-keyboard me-2"></i>TypingSpeedZ</a>
+            <div class="d-flex align-items-center" id="authSection">
+                <!-- Sẽ tự chuyển đổi khi Đăng nhập/Chưa đăng nhập -->
+                <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký</button>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <div class="app-wrap">
-        <div class="main-tabs">
-            <button id="btn-tab-typing" class="tab-item active" onclick="switchSection('typing')">
-                <i class="fa-solid fa-bolt"></i> Gõ Phím
-            </button>
-            <button id="btn-tab-leaderboard" class="tab-item" onclick="switchSection('leaderboard')">
-                <i class="fa-solid fa-trophy"></i> Xếp Hạng
-            </button>
-            <button id="btn-tab-profile" class="tab-item" onclick="switchSection('profile')">
-                <i class="fa-solid fa-user"></i> Hồ Sơ
-            </button>
-            <button id="btn-tab-admin" class="tab-item hidden" onclick="switchSection('admin')">
-                <i class="fa-solid fa-user-shield"></i> Admin
-            </button>
-        </div>
-
-        <!-- Section 1: Gõ Phím -->
-        <div id="section-typing" class="card">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-keyboard"></i> Luyện Gõ Phím</h2>
-                <div class="timer-badge" id="timer">60s</div>
-            </div>
-
-            <div class="words-wrapper">
-                <div id="words-display" class="words-display"></div>
-            </div>
-
-            <div class="input-row">
-                <input type="text" id="word-input" placeholder="Gõ từ tại đây và nhấn Space..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" autofocus>
-                <button id="restart-btn" class="btn-reload" onclick="resetGame()"><i class="fa-solid fa-rotate-right"></i></button>
-            </div>
-        </div>
-
-        <!-- Section 2: Bảng Xếp Hạng -->
-        <div id="section-leaderboard" class="card hidden">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-ranking-star"></i> Top Bảng Xếp Hạng</h2>
-            </div>
-
-            <!-- Khung Hạng Của Bạn -->
-            <div id="my-rank-banner" class="my-rank-box">
-                <span><i class="fa-solid fa-user-tag"></i> Hạng của bạn: <strong id="my-rank-val" style="color:#eab308;">Chưa đăng nhập</strong></span>
-                <span>WPM: <strong id="my-rank-wpm" style="color:#22c55e;">0</strong></span>
-            </div>
-
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Quốc gia</th>
-                            <th>Người chơi</th>
-                            <th>WPM Cao Nhất</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Section 3: Hồ Sơ -->
-        <div id="section-profile" class="card hidden">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-id-card"></i> Hồ Sơ Cá Nhân</h2>
-            </div>
-
-            <div id="profile-content" class="profile-grid">
-                <div class="profile-info-box">
-                    <p><strong>Tên tài khoản:</strong> <span id="prof-username">-</span></p>
-                    <p><strong>Email:</strong> <span id="prof-email">-</span></p>
-                    <p><strong>Mật khẩu:</strong> <span id="prof-password">••••••••</span></p>
-                    <p><strong>Ngày đăng ký:</strong> <span id="prof-created">-</span></p>
-                    <button class="btn-primary" style="margin-top:10px;" onclick="openChangePassModal()"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</button>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-card green">
-                        <span class="stat-title">WPM Cao Nhất</span>
-                        <span id="prof-max-wpm" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-card red">
-                        <span class="stat-title">WPM Thấp Nhất</span>
-                        <span id="prof-min-wpm" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-card gold">
-                        <span class="stat-title">Hạng Cao Nhất</span>
-                        <span id="prof-best-rank" class="stat-value">-</span>
-                    </div>
-                    <div class="stat-card blue">
-                        <span class="stat-title">Hạng Hiện Tại</span>
-                        <span id="prof-current-rank" class="stat-value">-</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 4: Admin -->
-        <div id="section-admin" class="card hidden">
-            <div class="card-header">
-                <h2><i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên (Admin)</h2>
-            </div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên TK</th>
-                            <th>Email</th>
-                            <th>Mật Khẩu</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-user-body"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Kết Quả -->
-    <div id="result-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <h3><i class="fa-solid fa-medal"></i> Kết Quả Bài Test</h3>
-            <div class="score-grid">
-                <div class="score-card">
-                    <span id="res-wpm" class="score-val">0</span>
-                    <span class="score-lbl">WPM</span>
-                </div>
-                <div class="score-card">
-                    <span id="res-acc" class="score-val">0%</span>
-                    <span class="score-lbl">Chính Xác</span>
-                </div>
-            </div>
-            <button class="btn-primary btn-full" onclick="closeResult()">Thử Lại</button>
-        </div>
-    </div>
-
-    <!-- Modal Đăng Nhập / Đăng Ký -->
-    <div id="auth-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <span class="close-x" onclick="closeAuth()">&times;</span>
-            <div class="tab-header">
-                <button type="button" id="tab-login" class="tab-btn active" onclick="setAuthMode('login')">Đăng nhập</button>
-                <button type="button" id="tab-register" class="tab-btn" onclick="setAuthMode('register')">Đăng ký</button>
-            </div>
-            <form id="auth-form" onsubmit="handleAuth(event)">
-                <input type="text" id="auth-username" placeholder="Tên tài khoản" autocapitalize="none" required>
-                <input type="email" id="auth-email" placeholder="Địa chỉ Email" class="hidden">
-                <input type="password" id="auth-password" placeholder="Mật khẩu" required>
-                <button type="submit" id="auth-submit" class="btn-primary btn-full">Đăng nhập</button>
-            </form>
+    <div class="container">
+        <div class="row g-4">
             
-            <!-- Hỗ trợ Discord theo yêu cầu -->
-            <div class="support-link">
-                Bạn cần hỗ trợ? Vô nhóm <a href="https://discord.gg/3HRkTTYZWp" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a> để được hỗ trợ.
+            <!-- KHU VỰC KHUNG GÕ PHÍM (BÊN TRÁI) -->
+            <div class="col-lg-8">
+                <div class="card p-4 shadow">
+                    
+                    <!-- BẢNG THỐNG KÊ THỜI GIAN/WPM -->
+                    <div class="row mb-4">
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <small class="text-secondary">Thời gian còn lại</small>
+                                <h3 class="text-warning mb-0" id="timer">60s</h3>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <small class="text-secondary">Tốc độ (WPM)</small>
+                                <h3 class="text-info mb-0" id="wpm">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-card">
+                                <small class="text-secondary">Độ chính xác</small>
+                                <h3 class="text-success mb-0" id="accuracy">100%</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KHUNG ĐOẠN VĂN MẪU -->
+                    <div class="words-box mb-3" id="wordsBox"></div>
+
+                    <!-- Ô NHẬP LIỆU & NÚT LÀM MỚI -->
+                    <div class="input-group mb-3">
+                        <input type="text" id="inputField" class="form-control" placeholder="Bắt đầu gõ từ đầu tiên tại đây..." autocomplete="off">
+                        <button class="btn btn-outline-secondary" onclick="resetTest()"><i class="fa-solid fa-rotate-right"></i> Thử lại</button>
+                    </div>
+
+                    <!-- THÔNG BÁO KẾT QUẢ KHI GÕ XONG -->
+                    <div id="resultBox" class="alert alert-success d-none text-center">
+                        <h4 class="alert-heading"><i class="fa-solid fa-trophy me-2"></i>Hoàn thành!</h4>
+                        <p class="mb-0" id="resultText"></p>
+                    </div>
+                </div>
             </div>
 
-            <p id="auth-msg" class="err-msg"></p>
+            <!-- BẢNG XẾP HẠNG TOP 100 (BÊN PHẢI) -->
+            <div class="col-lg-4">
+                <div class="card p-3 shadow">
+                    <h5 class="card-title text-warning mb-3"><i class="fa-solid fa-medal me-2"></i>Bảng Xếp Hạng TOP 100</h5>
+                    <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Người chơi</th>
+                                    <th>WPM</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboardBody">
+                                <tr><td colspan="3" class="text-center py-3">Đang tải...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- Modal Đổi Mật Khẩu -->
-    <div id="changepass-modal" class="modal-overlay hidden">
-        <div class="modal-box">
-            <span class="close-x" onclick="closeChangePassModal()">&times;</span>
-            <h3><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</h3>
-            <form onsubmit="handleChangePass(event)" style="margin-top:15px;">
-                <input type="password" id="pass-old" placeholder="Mật khẩu cũ" required class="input-modal">
-                <input type="password" id="pass-new" placeholder="Mật khẩu mới" required class="input-modal">
-                <input type="password" id="pass-confirm" placeholder="Xác nhận mật khẩu mới" required class="input-modal">
-                <button type="submit" class="btn-primary btn-full">Xác Nhận Đổi</button>
-            </form>
-            <p id="pass-msg" class="err-msg"></p>
+    <!-- MODAL ĐĂNG NHẬP -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-right-to-bracket me-2"></i>Đăng Nhập</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Tài khoản</label><input type="text" id="loginUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="password" id="loginPassword" class="form-control"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary w-100" onclick="handleLogin()">Đăng nhập</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- MODAL ĐĂNG KÝ -->
+    <div class="modal fade" id="registerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-plus me-2"></i>Đăng ký Tài Khoản</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3"><label class="form-label">Tên tài khoản</label><input type="text" id="regUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Email (không bắt buộc)</label><input type="email" id="regEmail" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="password" id="regPassword" class="form-control"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success w-100" onclick="handleRegister()">Tạo tài khoản</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS BOOTSTRAP & XỬ LÝ LOGIC MAIN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = "/api/index";
+        
+        // Kho từ vựng tiếng Việt mẫu
+        const SAMPLE_WORDS = [
+            "công", "nghệ", "thông", "tin", "máy", "tính", "luyện", "gõ", "phím", "nhanh", "tốc", "độ",
+            "chính", "xác", "bàn", "phím", "màn", "hình", "trang", "web", "phát", "triển", "phần", "mềm",
+            "dữ", "liệu", "hệ", "thống", "người", "dùng", "bảng", "xếp", "hạng", "thành", "tích", "thử",
+            "thách", "mỗi", "ngày", "tập", "trung", "kiên", "trì", "kỹ", "năng", "thực", "hành", "hiệu", "quả"
+        ];
+
+        let words = [];
+        let currentWordIndex = 0;
+        let timeLeft = 60;
+        let timer = null;
+        let isStarted = false;
+        let correctLetters = 0;
+        let totalLetters = 0;
+        let currentUser = JSON.parse(localStorage.getItem("typing_user")) || null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            updateAuthUI();
+            resetTest();
+            loadLeaderboard();
+
+            document.getElementById("inputField").addEventListener("input", handleInput);
+        });
+
+        // 1. QUẢN LÝ ĐĂNG NHẬP / DÙNG THỦ
+        function updateAuthUI() {
+            const authSec = document.getElementById("authSection");
+            if (currentUser) {
+                authSec.innerHTML = `
+                    <span class="text-light me-3"><i class="fa-solid fa-user me-1 text-info"></i> ${currentUser.username}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+                `;
+            } else {
+                authSec.innerHTML = `
+                    <button class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký</button>
+                `;
+            }
+        }
+
+        async function handleLogin() {
+            const u = document.getElementById("loginUsername").value;
+            const p = document.getElementById("loginPassword").value;
+            
+            const res = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "login", username: u, password: p })
+            });
+            const data = await res.json();
+
+            if (data.status === "success") {
+                currentUser = data.user;
+                localStorage.setItem("typing_user", JSON.stringify(currentUser));
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                updateAuthUI();
+                alert("Đăng nhập thành công!");
+            } else {
+                alert(data.message || "Đăng nhập thất bại!");
+            }
+        }
+
+        async function handleRegister() {
+            const u = document.getElementById("regUsername").value;
+            const e = document.getElementById("regEmail").value;
+            const p = document.getElementById("regPassword").value;
+
+            const res = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "register", username: u, email: e, password: p })
+            });
+            const data = await res.json();
+
+            if (data.status === "success") {
+                currentUser = data.user;
+                localStorage.setItem("typing_user", JSON.stringify(currentUser));
+                bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+                updateAuthUI();
+                alert("Tạo tài khoản thành công!");
+            } else {
+                alert(data.message || "Đăng ký thất bại!");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("typing_user");
+            currentUser = null;
+            updateAuthUI();
+        }
+
+        // 2. LOGIC GAME GÕ PHÍM
+        function resetTest() {
+            clearInterval(timer);
+            isStarted = false;
+            timeLeft = 60;
+            currentWordIndex = 0;
+            correctLetters = 0;
+            totalLetters = 0;
+
+            document.getElementById("timer").innerText = "60s";
+            document.getElementById("wpm").innerText = "0";
+            document.getElementById("accuracy").innerText = "100%";
+            document.getElementById("inputField").value = "";
+            document.getElementById("inputField").disabled = false;
+            document.getElementById("resultBox").classList.add("d-none");
+
+            // Xáo trộn từ ngẫu nhiên
+            words = [...SAMPLE_WORDS].sort(() => Math.random() - 0.5);
+            renderWords();
+        }
+
+        function renderWords() {
+            const box = document.getElementById("wordsBox");
+            box.innerHTML = words.map((w, idx) => {
+                const letters = w.split("").map(l => `<span class="letter">${l}</span>`).join("");
+                return `<span class="word ${idx === 0 ? 'active' : ''}" id="word-${idx}">${letters}</span>`;
+            }).join(" ");
+        }
+
+        function handleInput(e) {
+            if (!isStarted) {
+                startTimer();
+                isStarted = true;
+            }
+
+            const val = document.getElementById("inputField").value;
+            const currentWordStr = words[currentWordIndex];
+            const wordEl = document.getElementById(`word-${currentWordIndex}`);
+            const letterEls = wordEl.querySelectorAll(".letter");
+
+            // Nếu nhấn Space -> Chuyển sang từ tiếp theo
+            if (val.endsWith(" ")) {
+                const typedVal = val.trim();
+                if (typedVal === currentWordStr) {
+                    correctLetters += currentWordStr.length + 1;
+                }
+                totalLetters += currentWordStr.length + 1;
+
+                wordEl.classList.remove("active");
+                currentWordIndex++;
+                
+                if (currentWordIndex >= words.length) {
+                    endTest();
+                    return;
+                }
+
+                document.getElementById(`word-${currentWordIndex}`).classList.add("active");
+                document.getElementById("inputField").value = "";
+                
+                // Cuộn khung nhìn theo từ
+                document.getElementById(`word-${currentWordIndex}`).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return;
+            }
+
+            // Đánh dấu ký tự Đúng / Sai ngay thời gian thực
+            const chars = val.split("");
+            letterEls.forEach((el, idx) => {
+                if (chars[idx] == null) {
+                    el.className = "letter";
+                } else if (chars[idx] === currentWordStr[idx]) {
+                    el.className = "letter correct";
+                } else {
+                    el.className = "letter incorrect";
+                }
+            });
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").innerText = `${timeLeft}s`;
+
+                // Tính WPM tạm thời: (số ký tự đúng / 5)
+                const elapsedMin = (60 - timeLeft) / 60;
+                const currentWpm = Math.round((correctLetters / 5) / elapsedMin) || 0;
+                document.getElementById("wpm").innerText = currentWpm;
+
+                if (timeLeft <= 0) {
+                    endTest();
+                }
+            }, 1000);
+        }
+
+        async function endTest() {
+            clearInterval(timer);
+            document.getElementById("inputField").disabled = true;
+
+            const finalWpm = Math.round((correctLetters / 5));
+            const finalAcc = totalLetters > 0 ? Math.round((correctLetters / totalLetters) * 100) : 100;
+
+            document.getElementById("wpm").innerText = finalWpm;
+            document.getElementById("accuracy").innerText = `${finalAcc}%`;
+
+            const resBox = document.getElementById("resultBox");
+            resBox.classList.remove("d-none");
+
+            if (currentUser) {
+                document.getElementById("resultText").innerText = `Tốc độ của bạn: ${finalWpm} WPM - Độ chính xác: ${finalAcc}%. Đã lưu vào Bảng xếp hạng!`;
+                // Lưu điểm lên Supabase API
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "save_score",
+                        user_id: currentUser.id,
+                        wpm: finalWpm,
+                        accuracy: finalAcc
+                    })
+                });
+                loadLeaderboard();
+            } else {
+                document.getElementById("resultText").innerText = `Tốc độ của bạn: ${finalWpm} WPM - Độ chính xác: ${finalAcc}%. (Đăng nhập để lưu thành tích vào BXH)`;
+            }
+        }
+
+        // 3. NẠP BẢNG XẾP HẠNG
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch(`${API_URL}?action=get_leaderboard`);
+                const list = await res.json();
+
+                const tbody = document.getElementById("leaderboardBody");
+                tbody.innerHTML = "";
+
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="text-center">Chưa có dữ liệu</td></tr>`;
+                    return;
+                }
+
+                list.forEach((u, index) => {
+                    let rankBadge = `${index + 1}`;
+                    if (index === 0) rankBadge = "🥇";
+                    else if (index === 1) rankBadge = "🥈";
+                    else if (index === 2) rankBadge = "🥉";
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="fw-bold">${rankBadge}</td>
+                            <td>${u.country || "🇻🇳"} ${u.username}</td>
+                            <td class="text-warning fw-bold">${u.max_wpm || 0}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Lỗi tải BXH:", err);
+            }
+        }
+    </script>
 </body>
 </html>
