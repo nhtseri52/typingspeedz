@@ -32,7 +32,7 @@ function switchSection(section) {
     document.getElementById("section-admin").classList.add("hidden");
 
     const sec = document.getElementById(`section-${section}`);
-    if(sec) sec.classList.remove("hidden");
+    if (sec) sec.classList.remove("hidden");
 
     if (section === 'leaderboard') loadLeaderboard();
     if (section === 'profile') loadProfile();
@@ -117,7 +117,6 @@ function setAuthMode(mode) {
     document.getElementById("tab-login").classList.toggle("active", mode === 'login');
     document.getElementById("tab-register").classList.toggle("active", mode === 'register');
     document.getElementById("auth-email").classList.toggle("hidden", mode === 'login');
-    document.getElementById("auth-confirm-password").classList.toggle("hidden", mode === 'login');
     document.getElementById("auth-submit").innerText = mode === 'login' ? "Đăng nhập" : "Đăng ký";
 }
 
@@ -173,7 +172,6 @@ async function saveScore(wpm, accuracy) {
     });
 }
 
-// Giấu bớt Email (VD: ad***@gmail.com)
 function maskEmail(email) {
     if (!email) return "Chưa cập nhật";
     const parts = email.split("@");
@@ -182,7 +180,16 @@ function maskEmail(email) {
 }
 
 async function loadProfile() {
-    if (!currentUser) return;
+    if (!currentUser) {
+        document.getElementById("prof-username").innerText = "Chưa đăng nhập";
+        document.getElementById("prof-email").innerText = "-";
+        document.getElementById("prof-created").innerText = "-";
+        document.getElementById("prof-max-wpm").innerText = "0";
+        document.getElementById("prof-min-wpm").innerText = "0";
+        document.getElementById("prof-best-rank").innerText = "-";
+        document.getElementById("prof-current-rank").innerText = "-";
+        return;
+    }
     try {
         const res = await fetch(`${API_BASE}?action=get_profile&user_id=${currentUser.id}`);
         const data = await res.json();
@@ -196,7 +203,10 @@ async function loadProfile() {
     } catch (err) {}
 }
 
-function openChangePassModal() { document.getElementById("changepass-modal").classList.remove("hidden"); }
+function openChangePassModal() { 
+    if(!currentUser) { alert("Vui lòng đăng nhập!"); return; }
+    document.getElementById("changepass-modal").classList.remove("hidden"); 
+}
 function closeChangePassModal() { document.getElementById("changepass-modal").classList.add("hidden"); }
 
 async function handleChangePass(e) {
@@ -222,17 +232,43 @@ async function handleChangePass(e) {
     }
 }
 
+// Bảng xếp hạng + Cờ Quốc Gia + Khung "Hạng của bạn"
 async function loadLeaderboard() {
     const tbody = document.getElementById("leaderboard-body");
     const res = await fetch(`${API_BASE}?action=get_leaderboard`);
     const list = await res.json();
     tbody.innerHTML = "";
+
+    let myRankFound = null;
+
     list.forEach((item, idx) => {
-        tbody.innerHTML += `<tr><td>#${idx + 1}</td><td>${item.username}</td><td><strong style="color:#22c55e;">${item.max_wpm}</strong> WPM</td><td>100%</td></tr>`;
+        const rank = idx + 1;
+        if (currentUser && item.id === currentUser.id) {
+            myRankFound = { rank, wpm: item.max_wpm };
+        }
+        tbody.innerHTML += `
+            <tr ${currentUser && item.id === currentUser.id ? 'style="background:rgba(56,189,248,0.1); font-weight:bold;"' : ''}>
+                <td>#${rank}</td>
+                <td>${item.country || "🇻🇳"}</td>
+                <td>${item.username}</td>
+                <td><strong style="color:#22c55e;">${item.max_wpm}</strong> WPM</td>
+            </tr>
+        `;
     });
+
+    // Hiển thị Hạng của bạn ở Khung trên
+    if (currentUser && myRankFound) {
+        document.getElementById("my-rank-val").innerText = `#${myRankFound.rank} (${currentUser.username})`;
+        document.getElementById("my-rank-wpm").innerText = myRankFound.wpm;
+    } else if (currentUser) {
+        document.getElementById("my-rank-val").innerText = `Chưa có điểm (${currentUser.username})`;
+        document.getElementById("my-rank-wpm").innerText = "0";
+    } else {
+        document.getElementById("my-rank-val").innerText = "Chưa đăng nhập";
+        document.getElementById("my-rank-wpm").innerText = "0";
+    }
 }
 
-// Tải bảng Admin & Chỉnh sửa trực tiếp
 async function loadAdminUsers() {
     const tbody = document.getElementById("admin-user-body");
     const res = await fetch(`${API_BASE}?action=admin_get_users`);
@@ -242,9 +278,9 @@ async function loadAdminUsers() {
         tbody.innerHTML += `
             <tr>
                 <td>${u.id}</td>
-                <td><input type="text" id="adm-user-${u.id}" value="${u.username}" style="background:#0f172a; color:white; border:1px solid #334155; padding:4px; width:90px;"></td>
-                <td><input type="email" id="adm-email-${u.id}" value="${u.email}" style="background:#0f172a; color:white; border:1px solid #334155; padding:4px; width:120px;"></td>
-                <td><input type="text" id="adm-pass-${u.id}" value="${u.password}" style="background:#0f172a; color:white; border:1px solid #334155; padding:4px; width:90px;"></td>
+                <td><input type="text" id="adm-user-${u.id}" value="${u.username}" class="input-modal" style="padding:4px; width:90px; margin:0;"></td>
+                <td><input type="email" id="adm-email-${u.id}" value="${u.email}" class="input-modal" style="padding:4px; width:120px; margin:0;"></td>
+                <td><input type="text" id="adm-pass-${u.id}" value="${u.password}" class="input-modal" style="padding:4px; width:90px; margin:0;"></td>
                 <td><button class="btn-primary" style="padding:4px 8px; font-size:0.8rem;" onclick="saveAdminUser(${u.id})">Lưu</button></td>
             </tr>
         `;
