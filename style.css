@@ -1,7 +1,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
 body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
+
 .header { background-color: #1e293b; border-bottom: 1px solid #334155; padding: 12px 0; }
-.nav-container { max-width: 1000px; margin: 0 auto; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
+.nav-container { max-width: 900px; margin: 0 auto; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
 .logo { font-size: 1.2rem; font-weight: bold; color: #38bdf8; }
 .nav-right { display: flex; gap: 10px; align-items: center; }
 #lang-select { background: #0f172a; color: #fff; border: 1px solid #334155; padding: 6px; border-radius: 6px; }
@@ -30,11 +31,14 @@ body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
 #word-input:focus { border-color: #38bdf8; }
 .btn-reload { background: #475569; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
 
+/* Bảng Xếp Hạng & Hạng Của Bạn */
+.my-rank-box { background: #0f172a; border: 1px solid #38bdf8; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; }
 .table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table { width: 100%; border-collapse: collapse; margin-top: 5px; }
 th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
 th { background: #0f172a; color: #94a3b8; }
 
+/* Hồ Sơ */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; }
 .stat-card { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
 .stat-title { color: #94a3b8; font-size: 0.8rem; }
@@ -46,23 +50,25 @@ th { background: #0f172a; color: #94a3b8; }
 
 .profile-info-box p { margin-bottom: 8px; font-size: 0.95rem; }
 
-/* Modals */
+/* Modal & Form */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-box { background: #1e293b; padding: 20px; border-radius: 12px; width: 90%; max-width: 380px; position: relative; border: 1px solid #334155; }
 .close-x { position: absolute; top: 12px; right: 15px; font-size: 1.3rem; cursor: pointer; color: #94a3b8; }
 .tab-header { display: flex; margin-bottom: 15px; border-bottom: 1px solid #334155; }
 .tab-btn { flex: 1; background: none; border: none; color: #94a3b8; padding: 8px; cursor: pointer; font-weight: 600; }
 .tab-btn.active { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
-#auth-form input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 10px; color: white; border-radius: 6px; margin-bottom: 10px; outline: none; }
+#auth-form input, .input-modal { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 10px; color: white; border-radius: 6px; margin-bottom: 10px; outline: none; }
 .btn-full { width: 100%; margin-top: 5px; }
 .err-msg { color: #ef4444; font-size: 0.85rem; margin-top: 8px; }
 
-/* Tối ưu riêng giao diện ĐIỆN THOẠI */
+.support-link { margin-top: 15px; font-size: 0.85rem; color: #94a3b8; text-align: center; }
+.support-link a { color: #5865F2; text-decoration: none; font-weight: bold; }
+
+/* Responsive điện thoại */
 @media (max-width: 600px) {
     .app-wrap { padding: 0 10px; margin: 10px auto; }
     .card { padding: 15px; }
     .words-display { font-size: 1.1rem; }
     .nav-container { padding: 0 10px; }
     .logo { font-size: 1rem; }
-    #word-input { font-size: 0.95rem; padding: 8px; }
 }
