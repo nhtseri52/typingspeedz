@@ -17,7 +17,7 @@
 </head>
 <body class="p-4">
 
-    <!-- KHÓA BẢO MẬT ADMIN -->
+    <!-- KHÓA BẢO MẬT TRANG ADMIN -->
     <script>
         const ADMIN_PASS = "123456"; // Đổi mật khẩu Admin tại đây
         if (sessionStorage.getItem("admin_auth") !== "true") {
@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <!-- BẢNG QUẢN LÝ -->
+        <!-- BẢNG QUẢN LÝ NGƯỜI DÙNG -->
         <div class="card p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i> Danh Sách Người Chơi</h5>
@@ -75,13 +75,12 @@
                             <th>Mật khẩu</th>
                             <th>WPM (Điểm)</th>
                             <th>Độ chính xác</th>
-                            <th>Số bài đã gõ</th>
-                            <th>Trạng thái</th>
+                            <th>Trạng thái Khoá</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
-                        <tr><td colspan="8" class="text-center py-4">Đang tải...</td></tr>
+                        <tr><td colspan="7" class="text-center py-4">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -106,10 +105,6 @@
                     <div class="mb-3">
                         <label class="form-label text-info fw-bold">Tỉ lệ chính xác (%)</label>
                         <input type="number" id="scoreAccuracy" class="form-control" min="0" max="100">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-success fw-bold">Số lượt bài đã gõ</label>
-                        <input type="number" id="scoreTests" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -142,7 +137,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: KHÓA TÀI KHOẢN -->
+    <!-- MODAL 3: KHÓA TÀI KHOẢN THEO THỜI GIAN -->
     <div class="modal fade" id="banModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -205,7 +200,6 @@
                         <td><code>${u.password}</code></td>
                         <td class="text-warning fw-bold fs-5">${u.max_wpm || 0}</td>
                         <td class="text-info fw-bold">${u.accuracy || 100}%</td>
-                        <td class="text-success fw-bold"><i class="fa-solid fa-keyboard me-1"></i>${u.tests_completed || 0} bài</td>
                         <td>${banStatus}</td>
                         <td>
                             <button class="btn btn-sm btn-warning me-1" onclick='openScoreModal(${JSON.stringify(u)})'><i class="fa-solid fa-trophy"></i> Sửa WPM/BXH</button>
@@ -221,13 +215,12 @@
             });
         }
 
-        // Mở mục riêng sửa WPM / BXH / Số lượt gõ
+        // Mở mục riêng sửa WPM & Độ chính xác
         function openScoreModal(u) {
             document.getElementById("scoreUserId").value = u.id;
             document.getElementById("scoreUsername").innerText = u.username;
             document.getElementById("scoreWpm").value = u.max_wpm || 0;
             document.getElementById("scoreAccuracy").value = u.accuracy || 100;
-            document.getElementById("scoreTests").value = u.tests_completed || 0;
             scoreModal.show();
         }
 
@@ -239,8 +232,7 @@
                     action: "admin_update_score",
                     id: document.getElementById("scoreUserId").value,
                     max_wpm: document.getElementById("scoreWpm").value,
-                    accuracy: document.getElementById("scoreAccuracy").value,
-                    tests_completed: document.getElementById("scoreTests").value
+                    accuracy: document.getElementById("scoreAccuracy").value
                 })
             });
             scoreModal.hide();
@@ -272,7 +264,7 @@
             loadData();
         }
 
-        // Khóa & Mở Khóa
+        // Khóa & Mở Khóa theo thời gian
         function openBan(id, name) {
             document.getElementById("banUserId").value = id;
             document.getElementById("banUsername").innerText = name;
@@ -303,7 +295,7 @@
         }
 
         async function delUser(id) {
-            if (confirm("Xóa tài khoản này?")) {
+            if (confirm("Xóa vĩnh viễn tài khoản này?")) {
                 await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
