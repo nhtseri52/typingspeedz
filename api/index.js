@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const action = query.action || body.action;
 
     try {
-        // 1. ĐĂNG NHẬP
+        // 1. ĐĂNG NHẬP (Có kiểm tra khóa tài khoản)
         if (action === 'login') {
             const { data: u, error } = await supabase
                 .from('users')
@@ -41,13 +41,13 @@ export default async function handler(req, res) {
                 await supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', u.id);
                 return res.status(200).json({ status: "success", user: u });
             }
-            return res.status(400).json({ status: "error", message: "Tài khoản/mật khẩu sai!" });
+            return res.status(400).json({ status: "error", message: "Tài khoản hoặc mật khẩu không chính xác!" });
         }
 
         // 2. ĐĂNG KÝ
         if (action === 'register') {
             const { data: exists } = await supabase.from('users').select('id').eq('username', body.username).single();
-            if (exists) return res.status(400).json({ status: "error", message: "Tài khoản đã tồn tại!" });
+            if (exists) return res.status(400).json({ status: "error", message: "Tên tài khoản đã tồn tại!" });
 
             const { data: newUser, error } = await supabase
                 .from('users')
@@ -59,7 +59,6 @@ export default async function handler(req, res) {
                     role: "user",
                     max_wpm: 0,
                     accuracy: 0,
-                    tests_completed: 0,
                     last_active: new Date().toISOString()
                 }])
                 .select().single();
@@ -68,7 +67,7 @@ export default async function handler(req, res) {
             return res.status(200).json({ status: "success", user: newUser });
         }
 
-        // 3. LƯU ĐIỂM KHI GÕ XONG (Tăng số lượt gõ lên +1)
+        // 3. LƯU ĐIỂM KHI GÕ XONG
         if (action === 'save_score') {
             const wpm = Number(body.wpm);
             const accuracy = Number(body.accuracy || 100);
@@ -80,12 +79,10 @@ export default async function handler(req, res) {
                 }
 
                 let newMax = Math.max(u.max_wpm || 0, wpm);
-                let currentCompleted = (u.tests_completed || 0) + 1;
 
                 await supabase.from('users').update({
                     max_wpm: newMax,
                     accuracy: accuracy,
-                    tests_completed: currentCompleted,
                     last_active: new Date().toISOString()
                 }).eq('id', u.id);
 
@@ -98,7 +95,7 @@ export default async function handler(req, res) {
         if (action === 'get_leaderboard') {
             const { data: list } = await supabase
                 .from('users')
-                .select('id, username, country, max_wpm, accuracy, tests_completed, role')
+                .select('id, username, country, max_wpm, accuracy, role')
                 .order('max_wpm', { ascending: false })
                 .limit(100);
 
@@ -119,7 +116,7 @@ export default async function handler(req, res) {
             });
         }
 
-        // 6. ADMIN: SỬA HỒ SƠ CHUNG
+        // 6. ADMIN: SỬA HỒ SƠ CHUNG (Tên, Email, Mật khẩu)
         if (action === 'admin_update_user') {
             const { error } = await supabase
                 .from('users')
@@ -131,26 +128,25 @@ export default async function handler(req, res) {
                 })
                 .eq('id', body.id);
 
-            if (error) return res.status(400).json({ status: "error", message: "Không thể cập nhật!" });
-            return res.status(200).json({ status: "success", message: "Cập nhật thành công!" });
+            if (error) return res.status(400).json({ status: "error", message: "Không thể cập nhật hồ sơ!" });
+            return res.status(200).json({ status: "success", message: "Cập nhật hồ sơ thành công!" });
         }
 
-        // 7. ADMIN: MỤC RIÊNG SỬA WPM & BẢNG XẾP HẠNG & LƯỢT GÕ
+        // 7. ADMIN: MỤC RIÊNG SỬA WPM & BẢNG XẾP HẠNG
         if (action === 'admin_update_score') {
             const { error } = await supabase
                 .from('users')
                 .update({
                     max_wpm: Number(body.max_wpm || 0),
-                    accuracy: Number(body.accuracy || 100),
-                    tests_completed: Number(body.tests_completed || 0)
+                    accuracy: Number(body.accuracy || 100)
                 })
                 .eq('id', body.id);
 
             if (error) return res.status(400).json({ status: "error", message: "Lỗi sửa WPM!" });
-            return res.status(200).json({ status: "success", message: "Đã cập nhật Bảng xếp hạng thành công!" });
+            return res.status(200).json({ status: "success", message: "Đã cập nhật Bảng xếp hạng!" });
         }
 
-        // 8. ADMIN: KHÓA TÀI KHOẢN
+        // 8. ADMIN: KHÓA TÀI KHOẢN THEO THỜI GIAN
         if (action === 'admin_ban_user') {
             const { id, minutes } = body;
             let bannedUntil = null;
