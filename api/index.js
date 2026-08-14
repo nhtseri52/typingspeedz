@@ -1,9 +1,10 @@
-// Dữ liệu mẫu (Giả lập Database)
-let users = [
-    { id: 1, username: "thanhnguyen", password: "123", email: "admin@gmail.com", country: "🇻🇳", created_at: "01/01/2026", role: "admin", max_wpm: 50, min_wpm: 45, best_rank: 2, current_rank: 1 },
-    { id: 2, username: "longcr7", password: "123", email: "proplayer@gmail.com", country: "🇺🇸", created_at: "10/02/2026", role: "user", max_wpm: 55, min_wpm: 50, best_rank: 1, current_rank: 2 },
-    { id: 3, username: "huy", password: "123", email: "gamervn@gmail.com", country: "🇻🇳", created_at: "15/03/2026", role: "user", max_wpm: 42, min_wpm: 30, best_rank: 3, current_rank: 3 }
-];
+import { createClient } from '@supabase/supabase-js';
+
+// Khởi tạo kết nối Supabase chính xác bằng Keys của bạn
+const SUPABASE_URL = "https://dbirecjdaffoelpatuqn.supabase.co";
+const SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRiaXJlY2pkYWZmb2VscGF0dXFuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjcwNjc2NiwiZXhwIjoyMTAyMjgyNzY2fQ.G_qjo-CsgUes9H6T4Cw79fp-IkBmpNnZSOQQSAzXMXU";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -20,100 +21,119 @@ export default async function handler(req, res) {
     const query = req.query || {};
     const action = query.action || body.action;
 
-    // Đăng nhập
-    if (action === 'login') {
-        const u = users.find(x => x.username === body.username && x.password === body.password);
-        if (u) {
-            return res.status(200).json({ status: "success", user: u });
+    try {
+        // 1. Đăng nhập
+        if (action === 'login') {
+            const { data: u, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', body.username)
+                .eq('password', body.password)
+                .single();
+
+            if (u && !error) {
+                return res.status(200).json({ status: "success", user: u });
+            }
+            return res.status(400).json({ status: "error", message: "Tài khoản hoặc mật khẩu không chính xác!" });
         }
-        return res.status(400).json({ status: "error", message: "Mật khẩu hoặc tên tài khoản không chính xác!" });
-    }
 
-    // Đăng ký
-    if (action === 'register') {
-        const exists = users.find(x => x.username === body.username);
-        if (exists) return res.status(400).json({ status: "error", message: "Tên tài khoản đã tồn tại!" });
+        // 2. Đăng ký
+        if (action === 'register') {
+            const { data: exists } = await supabase
+                .from('users')
+                .select('id')
+                .eq('username', body.username)
+                .single();
 
-        const newUser = {
-            id: users.length + 1,
-            username: body.username,
-            password: body.password,
-            email: body.email || "",
-            country: body.country || "🇻🇳",
-            created_at: new Date().toLocaleDateString('vi-VN'),
-            role: "user",
-            max_wpm: 0,
-            min_wpm: 0,
-            best_rank: 999,
-            current_rank: users.length + 1
-        };
-        users.push(newUser);
-        return res.status(200).json({ status: "success", user: newUser });
-    }
+            if (exists) return res.status(400).json({ status: "error", message: "Tên tài khoản đã tồn tại!" });
 
-    // Lưu điểm & Tính hạng
-    if (action === 'save_score') {
-        const u = users.find(x => x.id == body.user_id);
-        if (u) {
+            const { data: newUser, error } = await supabase
+                .from('users')
+                .insert([{
+                    username: body.username,
+                    password: body.password,
+                    email: body.email || "",
+                    country: body.country || "🇻🇳"
+                }])
+                .select()
+                .single();
+
+            if (error) return res.status(400).json({ status: "error", message: "Không thể tạo tài khoản!" });
+
+            return res.status(200).json({ status: "success", user: newUser });
+        }
+
+        // 3. Lưu Điểm & Tính Hạng Cao Nhất Vĩnh Viễn
+        if (action === 'save_score') {
             const wpm = Number(body.wpm);
-            if (wpm > u.max_wpm) u.max_wpm = wpm;
-            if (u.min_wpm === 0 || wpm < u.min_wpm) u.min_wpm = wpm;
+            const { data: u } = await supabase.from('users').select('*').eq('id', body.user_id).single();
 
-            // Tính toán lại Bảng xếp hạng
-            users.sort((a, b) => b.max_wpm - a.max_wpm);
-            users.forEach((usr, idx) => {
-                const currentRank = idx + 1;
-                usr.current_rank = currentRank;
-                if (!usr.best_rank || currentRank < usr.best_rank) {
-                    usr.best_rank = currentRank;
+            if (u) {
+                let newMax = Math.max(u.max_wpm || 0, wpm);
+                let newMin = (u.min_wpm === 0 || wpm < u.min_wpm) ? wpm : u.min_wpm;
+
+                await supabase.from('users').update({ max_wpm: newMax, min_wpm: newMin }).eq('id', u.id);
+
+                // Cập nhật lại Bảng Xếp Hạng
+                const { data: allUsers } = await supabase.from('users').select('*').order('max_wpm', { ascending: false });
+                
+                if (allUsers) {
+                    for (let idx = 0; idx < allUsers.length; idx++) {
+                        const curRank = idx + 1;
+                        const usr = allUsers[idx];
+                        const bestRank = (!usr.best_rank || curRank < usr.best_rank) ? curRank : usr.best_rank;
+                        await supabase.from('users').update({ current_rank: curRank, best_rank: bestRank }).eq('id', usr.id);
+                    }
                 }
-            });
-            return res.status(200).json({ status: "success", rank: u.current_rank });
-        }
-        return res.status(400).json({ status: "error" });
-    }
-
-    // Đổi mật khẩu
-    if (action === 'change_password') {
-        const u = users.find(x => x.id == body.user_id);
-        if (!u) return res.status(400).json({ status: "error", message: "Tài khoản không tồn tại!" });
-
-        if (u.password !== body.old_password) {
-            return res.status(400).json({ status: "error", message: "Mật khẩu cũ không chính xác!" });
+                return res.status(200).json({ status: "success" });
+            }
+            return res.status(400).json({ status: "error" });
         }
 
-        u.password = body.new_password;
-        return res.status(200).json({ status: "success", message: "Đổi mật khẩu thành công!" });
-    }
+        // 4. Đổi Mật Khẩu
+        if (action === 'change_password') {
+            const { data: u } = await supabase.from('users').select('*').eq('id', body.user_id).single();
+            if (!u) return res.status(400).json({ status: "error", message: "Tài khoản không tồn tại!" });
 
-    // Lấy thông tin Hồ sơ
-    if (action === 'get_profile') {
-        const u = users.find(x => x.id == query.user_id);
-        if (u) return res.status(200).json(u);
-        return res.status(404).json({ message: "Not found" });
-    }
+            if (u.password !== body.old_password) {
+                return res.status(400).json({ status: "error", message: "Mật khẩu cũ không chính xác!" });
+            }
 
-    // Bảng xếp hạng
-    if (action === 'get_leaderboard') {
-        const list = [...users].sort((a, b) => b.max_wpm - a.max_wpm);
-        return res.status(200).json(list);
-    }
+            await supabase.from('users').update({ password: body.new_password }).eq('id', u.id);
+            return res.status(200).json({ status: "success", message: "Đổi mật khẩu thành công!" });
+        }
 
-    // Admin Quản lý
-    if (action === 'admin_get_users') {
-        return res.status(200).json(users);
-    }
+        // 5. Lấy Thông Tin Hồ Sơ
+        if (action === 'get_profile') {
+            const { data: u } = await supabase.from('users').select('*').eq('id', query.user_id).single();
+            if (u) return res.status(200).json(u);
+            return res.status(404).json({ message: "Not found" });
+        }
 
-    if (action === 'admin_update_user') {
-        const u = users.find(x => x.id == body.id);
-        if (u) {
-            u.username = body.username || u.username;
-            u.email = body.email || u.email;
-            if (body.password) u.password = body.password;
+        // 6. Lấy Bảng Xếp Hạng
+        if (action === 'get_leaderboard') {
+            const { data: list } = await supabase.from('users').select('*').order('max_wpm', { ascending: false });
+            return res.status(200).json(list || []);
+        }
+
+        // 7. Admin Quản Lý
+        if (action === 'admin_get_users') {
+            const { data: list } = await supabase.from('users').select('*').order('id', { ascending: true });
+            return res.status(200).json(list || []);
+        }
+
+        if (action === 'admin_update_user') {
+            await supabase.from('users').update({
+                username: body.username,
+                email: body.email,
+                password: body.password
+            }).eq('id', body.id);
             return res.status(200).json({ status: "success", message: "Cập nhật thành công!" });
         }
-        return res.status(400).json({ status: "error", message: "Cập nhật thất bại!" });
+
+    } catch (err) {
+        return res.status(500).json({ status: "error", message: err.message });
     }
 
-    return res.status(200).json({ message: "API Active" });
+    return res.status(200).json({ message: "API Connected with Supabase" });
 }
