@@ -1,316 +1,359 @@
-const API_BASE = "/api";
+const API_URL = "/api/index";
 
-const wordListVi = [
-    "như", "người", "sẽ", "được", "không", "có", "trong", "với", "những", "cho",
-    "đã", "về", "cũng", "đến", "các", "nhiều", "hơn", "nhà", "khi", "ngày",
-    "lại", "này", "ra", "phải", "một", "rất", "thì", "mà", "làm", "đi",
-    "còn", "nên", "từ", "đó", "theo", "vào", "ở", "để", "bạn", "mình",
-    "chúng", "ta", "họ", "anh", "chị", "em", "ông", "bà", "cha", "mẹ",
-    "con", "cửa", "phòng", "bàn", "ghế", "sách", "trường", "lớp", "thầy",
-    "cô", "việc", "thời", "gian", "hôm", "nay", "mai", "sáng",
-    "trưa", "tối", "đêm", "mưa", "nắng", "gió", "trời", "đường", "xe", "điện",
-    "nước", "cơm", "ăn", "uống", "ngủ", "chơi", "đẹp", "xấu", "nhanh", "chậm",
-    "lớn", "nhỏ", "mới", "cũ", "tốt", "vui", "buồn", "thích", "yêu", "muốn"
-];
+// KHO TỪ VỰNG DÀNH CHO CẢ 2 NGÔN NGỮ
+const WORDS_DATABASE = {
+    vi: [
+        "các", "người", "một", "thế", "lại", "có", "ra", "thế", "xem", "biết", "trong", "này", "về",
+        "cùng", "rất", "nhiều", "mình", "nên", "đất", "anh", "đang", "sẽ", "chỉ", "khi", "đó", "cho",
+        "được", "không", "như", "đã", "với", "việc", "ngày", "làm", "phải", "đến", "sự", "từ"
+    ],
+    en: [
+        "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
+        "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her",
+        "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up"
+    ]
+};
 
-const wordListEn = [
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
-    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
-    "this", "but", "his", "by", "from", "they", "we", "say", "her",
-    "she", "or", "an", "will", "my", "one", "all", "would", "there", "their",
-    "what", "so", "up", "out", "if", "about", "who", "get", "which", "go",
-    "me", "when", "make", "can", "like", "time", "no", "just", "him", "know",
-    "take", "people", "good", "new", "want", "day", "look", "come", "back",
-    "think", "see", "well", "way", "here", "thing", "give", "more", "some",
-    "very", "after"
-];
+// BỘ TỪ ĐIỂN DỊCH GIAO DIỆN
+const TRANSLATIONS = {
+    vi: {
+        tabGame: '<i class="fa-solid fa-bolt me-2"></i>Kiểm Tra Gõ Phím',
+        tabBoard: '<i class="fa-solid fa-trophy me-2"></i>Bảng Xếp Hạng',
+        tabProfile: '<i class="fa-solid fa-user me-2"></i>Hồ Sơ',
+        titlePractice: '<i class="fa-solid fa-keyboard me-2"></i>Luyện Gõ Phím',
+        inputPlaceholder: "Gõ từ tại đây và nhấn Space...",
+        btnReload: '<i class="fa-solid fa-rotate-right me-1"></i> Làm mới',
+        resTitle: "🎉 Kết Quả Bài Kiểm Tra",
+        lblSpeed: "TỐC ĐỘ (WPM)",
+        lblAcc: "ĐỘ CHÍNH XÁC",
+        resSavedMsg: "Đã tự động lưu thành tích vào Bảng xếp hạng!",
+        resGuestMsg: "Hãy đăng nhập để lưu thành tích vào Top 100!",
+        btnTryAgain: "Thử Bài Khác",
+        titleBoard: '<i class="fa-solid fa-trophy text-warning me-2"></i>Bảng Xếp Hạng Top 100',
+        thPlayer: "Người chơi",
+        thSpeed: "Tốc độ (WPM)",
+        thAcc: "Độ chính xác",
+        btnLogin: "Đăng Nhập",
+        btnLogout: "Thoát",
+        modalLoginTitle: "Đăng Nhập",
+        modalRegTitle: "Đăng Kỳ Tài Khoản",
+        lblUser: "Tài khoản",
+        lblPass: "Mật khẩu",
+        lblRegUser: "Tên tài khoản",
+        lblRegEmail: "Email (không bắt buộc)",
+        lblRegPass: "Mật khẩu",
+        msgNoAcc: 'Chưa có tài khoản? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký ngay</a>',
+        profileGuest: 'Vui lòng <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a> để xem thông tin hồ sơ.'
+    },
+    en: {
+        tabGame: '<i class="fa-solid fa-bolt me-2"></i>Typing Test',
+        tabBoard: '<i class="fa-solid fa-trophy me-2"></i>Leaderboard',
+        tabProfile: '<i class="fa-solid fa-user me-2"></i>Profile',
+        titlePractice: '<i class="fa-solid fa-keyboard me-2"></i>Typing Practice',
+        inputPlaceholder: "Type here and press Space...",
+        btnReload: '<i class="fa-solid fa-rotate-right me-1"></i> Restart',
+        resTitle: "🎉 Test Result",
+        lblSpeed: "SPEED (WPM)",
+        lblAcc: "ACCURACY",
+        resSavedMsg: "Your score has been saved to the Leaderboard!",
+        resGuestMsg: "Log in to save your score to the Top 100!",
+        btnTryAgain: "Try Again",
+        titleBoard: '<i class="fa-solid fa-trophy text-warning me-2"></i>Top 100 Leaderboard',
+        thPlayer: "Player",
+        thSpeed: "Speed (WPM)",
+        thAcc: "Accuracy",
+        btnLogin: "Log In",
+        btnLogout: "Log Out",
+        modalLoginTitle: "Log In",
+        modalRegTitle: "Create Account",
+        lblUser: "Username",
+        lblPass: "Password",
+        lblRegUser: "Username",
+        lblRegEmail: "Email (optional)",
+        lblRegPass: "Password",
+        msgNoAcc: 'Don\'t have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register now</a>',
+        profileGuest: 'Please <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a> to view your profile.'
+    }
+};
 
-let words = [], currentWordIndex = 0, correctCount = 0, incorrectCount = 0;
-let timeLeft = 60, timer = null, isPlaying = false, authMode = 'login', currentUser = null;
+let currentLang = "vi";
+let words = [];
+let currentWordIndex = 0;
+let timeLeft = 60;
+let timer = null;
+let isStarted = false;
+let correctLetters = 0;
+let totalLetters = 0;
+let currentUser = JSON.parse(localStorage.getItem("typing_user")) || null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    checkLoggedInUser();
-    resetGame();
-    document.getElementById("word-input").addEventListener("input", handleTyping);
-    document.getElementById("lang-select").addEventListener("change", resetGame);
+    updateAuthUI();
+    resetTest();
+    loadLeaderboard();
+
+    document.getElementById("inputField").addEventListener("input", handleInput);
 });
 
-function switchSection(section) {
-    document.querySelectorAll(".tab-item").forEach(btn => btn.classList.remove("active"));
-    const activeTab = document.getElementById(`btn-tab-${section}`);
-    if (activeTab) activeTab.classList.add("active");
+// 1. ĐỔI NGÔN NGỮ
+function changeLanguage() {
+    currentLang = document.getElementById("langSelect").value;
+    const t = TRANSLATIONS[currentLang];
 
-    document.getElementById("section-typing").classList.add("hidden");
-    document.getElementById("section-leaderboard").classList.add("hidden");
-    document.getElementById("section-profile").classList.add("hidden");
-    document.getElementById("section-admin").classList.add("hidden");
+    document.getElementById("tabBtnGame").innerHTML = t.tabGame;
+    document.getElementById("tabBtnLeaderboard").innerHTML = t.tabBoard;
+    document.getElementById("tabBtnProfile").innerHTML = t.tabProfile;
+    document.getElementById("titlePractice").innerHTML = t.titlePractice;
+    document.getElementById("inputField").placeholder = t.inputPlaceholder;
+    document.getElementById("btnReload").innerHTML = t.btnReload;
+    document.getElementById("resTitle").innerText = t.resTitle;
+    document.getElementById("lblSpeed").innerText = t.lblSpeed;
+    document.getElementById("lblAcc").innerText = t.lblAcc;
+    document.getElementById("btnTryAgain").innerText = t.btnTryAgain;
+    document.getElementById("titleBoard").innerHTML = t.titleBoard;
+    document.getElementById("thPlayer").innerText = t.thPlayer;
+    document.getElementById("thSpeed").innerText = t.thSpeed;
+    document.getElementById("thAcc").innerText = t.thAcc;
+    document.getElementById("modalLoginTitle").innerText = t.modalLoginTitle;
+    document.getElementById("modalRegTitle").innerText = t.modalRegTitle;
+    document.getElementById("lblUser").innerText = t.lblUser;
+    document.getElementById("lblPass").innerText = t.lblPass;
+    document.getElementById("btnLoginSubmit").innerText = t.btnLogin;
+    document.getElementById("lblRegUser").innerText = t.lblRegUser;
+    document.getElementById("lblRegEmail").innerText = t.lblRegEmail;
+    document.getElementById("lblRegPass").innerText = t.lblRegPass;
+    document.getElementById("msgNoAcc").innerHTML = t.msgNoAcc;
 
-    const sec = document.getElementById(`section-${section}`);
-    if (sec) sec.classList.remove("hidden");
-
-    if (section === 'leaderboard') loadLeaderboard();
-    if (section === 'profile') loadProfile();
-    if (section === 'admin') loadAdminUsers();
+    updateAuthUI();
+    resetTest();
+    renderProfile();
 }
 
-function resetGame() {
+// 2. CHUYỂN TAB
+function switchTab(tabName) {
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.add("d-none"));
+
+    event.currentTarget.classList.add("active");
+    document.getElementById(`tab-${tabName}`).classList.remove("d-none");
+
+    if (tabName === 'leaderboard') loadLeaderboard();
+    if (tabName === 'profile') renderProfile();
+}
+
+// 3. TÀI KHOẢN & HỒ SƠ
+function updateAuthUI() {
+    const authNav = document.getElementById("authNav");
+    const t = TRANSLATIONS[currentLang];
+
+    if (currentUser) {
+        authNav.innerHTML = `
+            <span class="text-light me-2"><i class="fa-solid fa-user text-info me-1"></i>${currentUser.username}</span>
+            <button class="btn btn-sm btn-outline-danger" onclick="logout()">${t.btnLogout}</button>
+        `;
+    } else {
+        authNav.innerHTML = `
+            <button class="btn btn-sm btn-primary" id="btnNavLogin" style="background-color: var(--primary-purple); border: none;" data-bs-toggle="modal" data-bs-target="#loginModal">${t.btnLogin}</button>
+        `;
+    }
+}
+
+async function handleLogin() {
+    const u = document.getElementById("loginUsername").value;
+    const p = document.getElementById("loginPassword").value;
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "login", username: u, password: p })
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+        currentUser = data.user;
+        localStorage.setItem("typing_user", JSON.stringify(currentUser));
+        bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+        updateAuthUI();
+    } else {
+        alert(data.message || "Failed!");
+    }
+}
+
+async function handleRegister() {
+    const u = document.getElementById("regUsername").value;
+    const e = document.getElementById("regEmail").value;
+    const p = document.getElementById("regPassword").value;
+
+    const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "register", username: u, email: e, password: p })
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+        currentUser = data.user;
+        localStorage.setItem("typing_user", JSON.stringify(currentUser));
+        bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+        updateAuthUI();
+        alert("Success!");
+    } else {
+        alert(data.message || "Failed!");
+    }
+}
+
+function logout() {
+    localStorage.removeItem("typing_user");
+    currentUser = null;
+    updateAuthUI();
+    renderProfile();
+}
+
+function renderProfile() {
+    const p = document.getElementById("profileContent");
+    const t = TRANSLATIONS[currentLang];
+
+    if (!currentUser) {
+        p.innerHTML = `<p class="text-center py-4 text-muted">${t.profileGuest}</p>`;
+        return;
+    }
+    p.innerHTML = `
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-info"></i>${currentLang === 'vi' ? 'Thông Tin Cá Nhân' : 'User Profile'}</h5>
+        <p><strong>${t.lblUser}:</strong> ${currentUser.username}</p>
+        <p><strong>Email:</strong> ${currentUser.email || 'N/A'}</p>
+        <p><strong>Highscore:</strong> <span class="text-warning fw-bold">${currentUser.max_wpm || 0} WPM</span></p>
+    `;
+}
+
+// 4. LOGIC GAME GÕ PHÍM
+function resetTest() {
     clearInterval(timer);
-    isPlaying = false; timeLeft = 60; currentWordIndex = 0; correctCount = 0; incorrectCount = 0;
-    document.getElementById("timer").innerText = "60s";
-    const input = document.getElementById("word-input");
-    input.value = ""; input.disabled = false;
-    words = []; generateMoreWords(100); renderWords();
-}
+    isStarted = false;
+    timeLeft = 60;
+    currentWordIndex = 0;
+    correctLetters = 0;
+    totalLetters = 0;
 
-function generateMoreWords(count) {
-    const lang = document.getElementById("lang-select").value;
-    const baseList = lang === "vi" ? wordListVi : wordListEn;
-    for (let i = 0; i < count; i++) words.push(baseList[Math.floor(Math.random() * baseList.length)]);
+    document.getElementById("timer").innerText = "60s";
+    document.getElementById("inputField").value = "";
+    document.getElementById("inputField").disabled = false;
+    document.getElementById("resultBox").classList.add("d-none");
+
+    // Lấy danh sách từ theo ngôn ngữ được chọn
+    words = [...WORDS_DATABASE[currentLang]].sort(() => Math.random() - 0.5);
+    renderWords();
+    document.getElementById("inputField").focus();
 }
 
 function renderWords() {
-    const display = document.getElementById("words-display");
-    display.innerHTML = "";
-    words.forEach((w, idx) => {
-        const span = document.createElement("span");
-        span.className = "word";
-        if (idx === currentWordIndex) span.classList.add("current");
-        span.innerText = w;
-        display.appendChild(span);
-    });
+    const box = document.getElementById("wordsBox");
+    box.innerHTML = words.map((w, idx) => {
+        const letters = w.split("").map(l => `<span class="letter">${l}</span>`).join("");
+        return `<span class="word ${idx === 0 ? 'active' : ''}" id="word-${idx}">${letters}</span>`;
+    }).join(" ");
 }
 
-function handleTyping(e) {
-    const val = e.target.value;
-    if (!isPlaying && val.length > 0) {
-        isPlaying = true;
-        timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById("timer").innerText = `${timeLeft}s`;
-            if (timeLeft <= 0) endGame();
-        }, 1000);
+function handleInput() {
+    if (!isStarted) {
+        startTimer();
+        isStarted = true;
     }
+
+    const val = document.getElementById("inputField").value;
+    const currentWordStr = words[currentWordIndex];
+    const wordEl = document.getElementById(`word-${currentWordIndex}`);
+    if (!wordEl) return;
+
+    const letterEls = wordEl.querySelectorAll(".letter");
 
     if (val.endsWith(" ")) {
-        const typedWord = val.trim();
-        const wordSpans = document.querySelectorAll(".words-display .word");
-        if (typedWord === words[currentWordIndex]) {
-            wordSpans[currentWordIndex].className = "word correct";
-            correctCount++;
-        } else {
-            wordSpans[currentWordIndex].className = "word incorrect";
-            incorrectCount++;
+        const typedVal = val.trim();
+        if (typedVal === currentWordStr) {
+            correctLetters += currentWordStr.length + 1;
         }
+        totalLetters += currentWordStr.length + 1;
+
+        wordEl.classList.remove("active");
         currentWordIndex++;
-        if (currentWordIndex < wordSpans.length) {
-            const nextWord = wordSpans[currentWordIndex];
-            nextWord.classList.add("current");
-            nextWord.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        if (currentWordIndex >= words.length) {
+            endTest();
+            return;
         }
-        e.target.value = "";
-    }
-}
 
-function endGame() {
-    clearInterval(timer);
-    document.getElementById("word-input").disabled = true;
-    const wpm = correctCount;
-    const accuracy = (correctCount + incorrectCount) > 0 ? Math.round((correctCount / (correctCount + incorrectCount)) * 100) : 0;
-    document.getElementById("res-wpm").innerText = wpm;
-    document.getElementById("res-acc").innerText = `${accuracy}%`;
-    document.getElementById("result-modal").classList.remove("hidden");
-    if (currentUser) saveScore(wpm, accuracy);
-}
-
-function closeResult() { document.getElementById("result-modal").classList.add("hidden"); resetGame(); }
-function openAuth() { document.getElementById("auth-modal").classList.remove("hidden"); }
-function closeAuth() { document.getElementById("auth-modal").classList.add("hidden"); }
-
-function setAuthMode(mode) {
-    authMode = mode;
-    document.getElementById("tab-login").classList.toggle("active", mode === 'login');
-    document.getElementById("tab-register").classList.toggle("active", mode === 'register');
-    document.getElementById("auth-email").classList.toggle("hidden", mode === 'login');
-    document.getElementById("auth-submit").innerText = mode === 'login' ? "Đăng nhập" : "Đăng ký";
-}
-
-async function handleAuth(e) {
-    e.preventDefault();
-    const user = document.getElementById("auth-username").value;
-    const pass = document.getElementById("auth-password").value;
-    const email = document.getElementById("auth-email").value;
-    const action = authMode === 'login' ? 'login' : 'register';
-
-    try {
-        const res = await fetch(API_BASE, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action, username: user, password: pass, email })
-        });
-        const data = await res.json();
-        if (data.status === "success") {
-            currentUser = data.user;
-            localStorage.setItem("typing_user", JSON.stringify(currentUser));
-            updateUserUI();
-            closeAuth();
-        } else {
-            document.getElementById("auth-msg").innerText = data.message;
+        const nextEl = document.getElementById(`word-${currentWordIndex}`);
+        if (nextEl) {
+            nextEl.classList.add("active");
+            nextEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-    } catch (err) { document.getElementById("auth-msg").innerText = "Lỗi kết nối!"; }
-}
-
-function checkLoggedInUser() {
-    const saved = localStorage.getItem("typing_user");
-    if (saved) { currentUser = JSON.parse(saved); updateUserUI(); }
-}
-
-function updateUserUI() {
-    const area = document.getElementById("user-area");
-    const adminBtn = document.getElementById("btn-tab-admin");
-    if (currentUser) {
-        area.innerHTML = `<span style="color:#38bdf8; font-weight:600;"><i class="fa-solid fa-user"></i> ${currentUser.username}</span> <button class="btn-primary" style="background:#ef4444;" onclick="logout()">Thoát</button>`;
-        if (currentUser.role === 'admin') adminBtn.classList.remove("hidden");
-    } else {
-        area.innerHTML = `<button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>`;
-        adminBtn.classList.add("hidden");
-    }
-}
-
-function logout() { currentUser = null; localStorage.removeItem("typing_user"); updateUserUI(); switchSection('typing'); }
-
-async function saveScore(wpm, accuracy) {
-    await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "save_score", user_id: currentUser.id, wpm, accuracy })
-    });
-}
-
-function maskEmail(email) {
-    if (!email) return "Chưa cập nhật";
-    const parts = email.split("@");
-    if (parts.length < 2) return email;
-    return parts[0].substring(0, 2) + "***@" + parts[1];
-}
-
-async function loadProfile() {
-    if (!currentUser) {
-        document.getElementById("prof-username").innerText = "Chưa đăng nhập";
-        document.getElementById("prof-email").innerText = "-";
-        document.getElementById("prof-created").innerText = "-";
-        document.getElementById("prof-max-wpm").innerText = "0";
-        document.getElementById("prof-min-wpm").innerText = "0";
-        document.getElementById("prof-best-rank").innerText = "-";
-        document.getElementById("prof-current-rank").innerText = "-";
+        document.getElementById("inputField").value = "";
         return;
     }
-    try {
-        const res = await fetch(`${API_BASE}?action=get_profile&user_id=${currentUser.id}`);
-        const data = await res.json();
-        document.getElementById("prof-username").innerText = data.username;
-        document.getElementById("prof-email").innerText = maskEmail(data.email);
-        document.getElementById("prof-created").innerText = data.created_at || "Mới đăng ký";
-        document.getElementById("prof-max-wpm").innerText = data.max_wpm || 0;
-        document.getElementById("prof-min-wpm").innerText = data.min_wpm || 0;
-        document.getElementById("prof-best-rank").innerText = data.best_rank ? `#${data.best_rank}` : "-";
-        document.getElementById("prof-current-rank").innerText = data.current_rank ? `#${data.current_rank}` : "-";
-    } catch (err) {}
-}
 
-function openChangePassModal() { 
-    if(!currentUser) { alert("Vui lòng đăng nhập!"); return; }
-    document.getElementById("changepass-modal").classList.remove("hidden"); 
-}
-function closeChangePassModal() { document.getElementById("changepass-modal").classList.add("hidden"); }
-
-async function handleChangePass(e) {
-    e.preventDefault();
-    const oldP = document.getElementById("pass-old").value;
-    const newP = document.getElementById("pass-new").value;
-    const confirmP = document.getElementById("pass-confirm").value;
-    const msg = document.getElementById("pass-msg");
-
-    if (newP !== confirmP) { msg.innerText = "Mật khẩu mới không khớp!"; return; }
-
-    const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "change_password", user_id: currentUser.id, old_password: oldP, new_password: newP })
+    const chars = val.split("");
+    letterEls.forEach((el, idx) => {
+        if (chars[idx] == null) el.className = "letter";
+        else if (chars[idx] === currentWordStr[idx]) el.className = "letter correct";
+        else el.className = "letter incorrect";
     });
-    const data = await res.json();
-    if (data.status === "success") {
-        alert("Đổi mật khẩu thành công!");
-        closeChangePassModal();
+}
+
+function startTimer() {
+    timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `${timeLeft}s`;
+        if (timeLeft <= 0) endTest();
+    }, 1000);
+}
+
+async function endTest() {
+    clearInterval(timer);
+    document.getElementById("inputField").disabled = true;
+
+    const finalWpm = Math.round(correctLetters / 5);
+    const finalAcc = totalLetters > 0 ? Math.round((correctLetters / totalLetters) * 100) : 100;
+    const t = TRANSLATIONS[currentLang];
+
+    document.getElementById("resWpm").innerText = finalWpm;
+    document.getElementById("resAcc").innerText = `${finalAcc}%`;
+    document.getElementById("resultBox").classList.remove("d-none");
+
+    if (currentUser) {
+        document.getElementById("resMsg").innerText = t.resSavedMsg;
+        await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action: "save_score",
+                user_id: currentUser.id,
+                wpm: finalWpm,
+                accuracy: finalAcc
+            })
+        });
     } else {
-        msg.innerText = data.message;
+        document.getElementById("resMsg").innerText = t.resGuestMsg;
     }
 }
 
-// Bảng xếp hạng + Cờ Quốc Gia + Khung "Hạng của bạn"
+// 5. LOAD BẢNG XẾP HẠNG
 async function loadLeaderboard() {
-    const tbody = document.getElementById("leaderboard-body");
-    const res = await fetch(`${API_BASE}?action=get_leaderboard`);
+    const res = await fetch(`${API_URL}?action=get_leaderboard`);
     const list = await res.json();
+    const tbody = document.getElementById("leaderboardBody");
     tbody.innerHTML = "";
 
-    let myRankFound = null;
-
-    list.forEach((item, idx) => {
-        const rank = idx + 1;
-        if (currentUser && item.id === currentUser.id) {
-            myRankFound = { rank, wpm: item.max_wpm };
-        }
-        tbody.innerHTML += `
-            <tr ${currentUser && item.id === currentUser.id ? 'style="background:rgba(56,189,248,0.1); font-weight:bold;"' : ''}>
-                <td>#${rank}</td>
-                <td>${item.country || "🇻🇳"}</td>
-                <td>${item.username}</td>
-                <td><strong style="color:#22c55e;">${item.max_wpm}</strong> WPM</td>
-            </tr>
-        `;
-    });
-
-    // Hiển thị Hạng của bạn ở Khung trên
-    if (currentUser && myRankFound) {
-        document.getElementById("my-rank-val").innerText = `#${myRankFound.rank} (${currentUser.username})`;
-        document.getElementById("my-rank-wpm").innerText = myRankFound.wpm;
-    } else if (currentUser) {
-        document.getElementById("my-rank-val").innerText = `Chưa có điểm (${currentUser.username})`;
-        document.getElementById("my-rank-wpm").innerText = "0";
-    } else {
-        document.getElementById("my-rank-val").innerText = "Chưa đăng nhập";
-        document.getElementById("my-rank-wpm").innerText = "0";
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">No data</td></tr>`;
+        return;
     }
-}
 
-async function loadAdminUsers() {
-    const tbody = document.getElementById("admin-user-body");
-    const res = await fetch(`${API_BASE}?action=admin_get_users`);
-    const list = await res.json();
-    tbody.innerHTML = "";
-    list.forEach(u => {
+    list.forEach((u, i) => {
         tbody.innerHTML += `
             <tr>
-                <td>${u.id}</td>
-                <td><input type="text" id="adm-user-${u.id}" value="${u.username}" class="input-modal" style="padding:4px; width:90px; margin:0;"></td>
-                <td><input type="email" id="adm-email-${u.id}" value="${u.email}" class="input-modal" style="padding:4px; width:120px; margin:0;"></td>
-                <td><input type="text" id="adm-pass-${u.id}" value="${u.password}" class="input-modal" style="padding:4px; width:90px; margin:0;"></td>
-                <td><button class="btn-primary" style="padding:4px 8px; font-size:0.8rem;" onclick="saveAdminUser(${u.id})">Lưu</button></td>
+                <td>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+                <td>${u.country || "🇻🇳"} ${u.username}</td>
+                <td class="text-end text-warning fw-bold">${u.max_wpm || 0}</td>
+                <td class="text-end text-info">${u.accuracy || 100}%</td>
             </tr>
         `;
     });
-}
-
-async function saveAdminUser(id) {
-    const u = document.getElementById(`adm-user-${id}`).value;
-    const e = document.getElementById(`adm-email-${id}`).value;
-    const p = document.getElementById(`adm-pass-${id}`).value;
-
-    const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "admin_update_user", id, username: u, email: e, password: p })
-    });
-    const data = await res.json();
-    alert(data.message);
 }
