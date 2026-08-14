@@ -2,13 +2,9 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TypingSpeed - Test Gõ Phím</title>
-    <!-- Thẻ quan trọng để sửa lỗi kết nối SSL/Mixed Content -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2159939441444456" crossorigin="anonymous"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
@@ -23,7 +19,7 @@
                     <option value="vi">🇻🇳 Tiếng Việt</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
-                <a href="https://discord.gg/3HRkTTYZWp" target="_blank" class="btn-discord"><i class="fa-brands fa-discord"></i> Discord</a>
+                <a href="https://discord.gg/3HRkTTYZWp" target="_blank" class="btn-discord"><i class="fa-brands fa-discord"></i></a>
                 <div id="user-area">
                     <button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>
                 </div>
@@ -34,17 +30,20 @@
     <div class="app-wrap">
         <div class="main-tabs">
             <button id="btn-tab-typing" class="tab-item active" onclick="switchSection('typing')">
-                <i class="fa-solid fa-bolt"></i> Kiểm Tra Gõ Phím
+                <i class="fa-solid fa-bolt"></i> Gõ Phím
             </button>
             <button id="btn-tab-leaderboard" class="tab-item" onclick="switchSection('leaderboard')">
-                <i class="fa-solid fa-trophy"></i> Bảng Xếp Hạng
+                <i class="fa-solid fa-trophy"></i> Xếp Hạng
             </button>
             <button id="btn-tab-profile" class="tab-item" onclick="switchSection('profile')">
                 <i class="fa-solid fa-user"></i> Hồ Sơ
             </button>
+            <button id="btn-tab-admin" class="tab-item hidden" onclick="switchSection('admin')">
+                <i class="fa-solid fa-user-shield"></i> Admin
+            </button>
         </div>
 
-        <!-- Section 1: Typing (Giao diện cũ xịn xò) -->
+        <!-- Section 1: Typing -->
         <div id="section-typing" class="card">
             <div class="card-header">
                 <h2><i class="fa-solid fa-keyboard"></i> Luyện Gõ Phím</h2>
@@ -56,40 +55,29 @@
             </div>
 
             <div class="input-row">
-                <input type="text" id="word-input" placeholder="Gõ từ tại đây và nhấn Space..." autocomplete="off" autofocus>
-                <button id="restart-btn" class="btn-reload" onclick="resetGame()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
+                <!-- autocapitalize="none" & autocorrect="off" giúp bàn phím ĐT tự viết chữ thường -->
+                <input type="text" id="word-input" placeholder="Gõ từ tại đây và nhấn Space..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" autofocus>
+                <button id="restart-btn" class="btn-reload" onclick="resetGame()"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
         </div>
 
         <!-- Section 2: Leaderboard -->
         <div id="section-leaderboard" class="card hidden">
             <div class="card-header">
-                <h2><i class="fa-solid fa-ranking-star"></i> Bảng Xếp Hạng Top 100</h2>
-                <span id="my-rank-badge" class="rank-badge">Hạng của bạn: Top 100+</span>
+                <h2><i class="fa-solid fa-ranking-star"></i> Top Bảng Xếp Hạng</h2>
             </div>
-
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Quốc gia</th>
                             <th>Người chơi</th>
                             <th>WPM</th>
                             <th>Chính xác</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboard-body">
-                        <tr><td colspan="5" style="text-align:center;">Đang tải bảng xếp hạng...</td></tr>
-                    </tbody>
+                    <tbody id="leaderboard-body"></tbody>
                 </table>
-            </div>
-
-            <div class="pagination">
-                <button onclick="loadLeaderboard(1)" id="page-btn-1" class="page-btn active">1</button>
-                <button onclick="loadLeaderboard(2)" id="page-btn-2" class="page-btn">2</button>
-                <button onclick="loadLeaderboard(3)" id="page-btn-3" class="page-btn">3</button>
-                <button onclick="loadLeaderboard(4)" id="page-btn-4" class="page-btn">4</button>
             </div>
         </div>
 
@@ -100,13 +88,16 @@
             </div>
             
             <div id="profile-not-login" class="profile-empty">
-                <p>Vui lòng <a href="#" onclick="openAuth()">Đăng nhập</a> để xem thông tin hồ sơ của bạn.</p>
+                <p>Vui lòng <a href="#" onclick="openAuth()">Đăng nhập</a> để xem thông tin.</p>
             </div>
 
             <div id="profile-content" class="profile-grid hidden">
                 <div class="profile-info-box">
                     <p><strong>Tên tài khoản:</strong> <span id="prof-username">-</span></p>
+                    <p><strong>Email:</strong> <span id="prof-email">-</span></p>
+                    <p><strong>Mật khẩu:</strong> <span id="prof-password">••••••••</span></p>
                     <p><strong>Ngày đăng ký:</strong> <span id="prof-created">-</span></p>
+                    <button class="btn-primary" style="margin-top:10px;" onclick="openChangePassModal()"><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</button>
                 </div>
 
                 <div class="stats-grid">
@@ -129,6 +120,27 @@
                 </div>
             </div>
         </div>
+
+        <!-- Section 4: Admin Management -->
+        <div id="section-admin" class="card hidden">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên (Admin)</h2>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên TK</th>
+                            <th>Email</th>
+                            <th>Mật Khẩu</th>
+                            <th>Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-user-body"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Kết quả -->
@@ -145,7 +157,6 @@
                     <span class="score-lbl">Chính Xác</span>
                 </div>
             </div>
-            <p id="rank-display" style="margin-bottom:15px; font-weight:600;">Hạng: -</p>
             <button class="btn-primary btn-full" onclick="closeResult()">Thử Lại</button>
         </div>
     </div>
@@ -159,19 +170,28 @@
                 <button type="button" id="tab-register" class="tab-btn" onclick="setAuthMode('register')">Đăng ký</button>
             </div>
             <form id="auth-form" onsubmit="handleAuth(event)">
-                <input type="text" id="auth-username" placeholder="Tên tài khoản" required>
+                <input type="text" id="auth-username" placeholder="Tên tài khoản" autocapitalize="none" required>
                 <input type="email" id="auth-email" placeholder="Địa chỉ Email" class="hidden">
                 <input type="password" id="auth-password" placeholder="Mật khẩu" required>
                 <input type="password" id="auth-confirm-password" placeholder="Nhập lại mật khẩu" class="hidden">
-
                 <button type="submit" id="auth-submit" class="btn-primary btn-full">Đăng nhập</button>
             </form>
-
             <p id="auth-msg" class="err-msg"></p>
+        </div>
+    </div>
 
-            <div id="forgot-note" class="forgot-box">
-                Nếu bạn quên mật khẩu? Vô nhóm <a href="https://discord.gg/3HRkTTYZWp" target="_blank">Discord</a> để được hỗ trợ.
-            </div>
+    <!-- Modal Đổi Mật Khẩu -->
+    <div id="changepass-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <span class="close-x" onclick="closeChangePassModal()">&times;</span>
+            <h3><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</h3>
+            <form onsubmit="handleChangePass(event)" style="margin-top:15px;">
+                <input type="password" id="pass-old" placeholder="Mật khẩu cũ" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
+                <input type="password" id="pass-new" placeholder="Mật khẩu mới" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
+                <input type="password" id="pass-confirm" placeholder="Xác nhận mật khẩu mới" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
+                <button type="submit" class="btn-primary btn-full">Xác Nhận Đổi</button>
+            </form>
+            <p id="pass-msg" class="err-msg"></p>
         </div>
     </div>
 
