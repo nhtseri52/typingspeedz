@@ -189,7 +189,7 @@ async function handleLogin() {
         updateAuthUI();
         renderProfile();
     } else {
-        alert(data.message || "Failed!");
+        alert(data.message || "Đăng nhập thất bại!");
     }
 }
 
@@ -211,9 +211,9 @@ async function handleRegister() {
         bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
         updateAuthUI();
         renderProfile();
-        alert("Success!");
+        alert("Đăng ký thành công!");
     } else {
-        alert(data.message || "Failed!");
+        alert(data.message || "Đăng ký thất bại!");
     }
 }
 
@@ -224,7 +224,7 @@ function logout() {
     renderProfile();
 }
 
-// XỬ LÝ RENDER CHI TIẾT HỒ SƠ + LỊCH SỬ BÀI TEST
+// RENDER CHI TIẾT HỒ SƠ VÀ LỊCH SỬ BÀI TEST
 async function renderProfile() {
     const p = document.getElementById("profileContent");
     const t = TRANSLATIONS[currentLang];
@@ -236,7 +236,6 @@ async function renderProfile() {
 
     p.innerHTML = `<div class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>${t.profLoading}</div>`;
 
-    // Gọi API lấy thông tin chi tiết user và lịch sử gõ phím
     let profileData = null;
     try {
         const res = await fetch(`${API_URL}?action=get_profile&user_id=${currentUser.id}`);
@@ -250,12 +249,12 @@ async function renderProfile() {
 
     let historyHtml = "";
     if (history.length === 0) {
-        historyHtml = `<tr><td colspan="3" class="text-center text-muted py-3">${currentLang === 'vi' ? 'Chưa có lịch sử gõ' : 'No typing history yet'}</td></tr>`;
+        historyHtml = `<tr><td colspan="3" class="text-center text-muted py-3">${currentLang === 'vi' ? 'Chưa có lịch sử gõ phím' : 'No typing history yet'}</td></tr>`;
     } else {
         history.forEach(item => {
             historyHtml += `
                 <tr>
-                    <td>${item.created_at || 'Recently'}</td>
+                    <td>${item.created_at || 'Mới đây'}</td>
                     <td class="text-warning fw-bold">${item.wpm} WPM</td>
                     <td class="text-info">${item.accuracy}%</td>
                 </tr>
@@ -271,7 +270,7 @@ async function renderProfile() {
                 </div>
                 <div>
                     <h5 class="fw-bold mb-0">${userData.username}</h5>
-                    <small class="text-muted">${userData.email || 'No Email'}</small>
+                    <small class="text-muted">${userData.email || 'Chưa cập nhật Email'}</small>
                 </div>
             </div>
             <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>${t.btnLogout}</button>
@@ -330,7 +329,6 @@ function resetTest() {
     document.getElementById("inputField").disabled = false;
     document.getElementById("resultBox").classList.add("d-none");
 
-    // Lấy danh sách từ theo ngôn ngữ được chọn
     words = [...WORDS_DATABASE[currentLang]].sort(() => Math.random() - 0.5);
     renderWords();
     document.getElementById("inputField").focus();
@@ -434,7 +432,7 @@ async function loadLeaderboard() {
     tbody.innerHTML = "";
 
     if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">No data</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">Chưa có dữ liệu</td></tr>`;
         return;
     }
 
