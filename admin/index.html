@@ -3,50 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị - TypingSpeedZ Admin</title>
+    <title>TypingSpeedZ - Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; }
         .card { background-color: #1e293b; border: 1px solid #334155; color: #fff; }
         .table { color: #f8fafc; border-color: #334155; }
-        .table-dark { background-color: #1e293b; }
-        .stat-card { border-left: 4px solid #3b82f6; }
-        .stat-card.online { border-left-color: #22c55e; }
         .modal-content { background-color: #1e293b; color: #fff; }
         .form-control, .form-select { background-color: #0f172a; border-color: #334155; color: #fff; }
         .form-control:focus, .form-select:focus { background-color: #0f172a; color: #fff; }
     </style>
 </head>
 <body class="p-4">
-    <script>
-    // Đặt mật khẩu Admin của bạn tại đây (sửa '123456' thành mật khẩu bạn muốn)
-    const ADMIN_PASSWORD_SECRET = "locthinh52";
 
-    // Kiểm tra xem đã đăng nhập trước đó chưa
-    if (sessionStorage.getItem("admin_authenticated") !== "true") {
-        let pass = prompt("🔐 Nhập mật khẩu Quản Trị Viên:");
-        if (pass === ADMIN_PASSWORD_SECRET) {
-            sessionStorage.setItem("admin_authenticated", "true");
-        } else {
-            alert("❌ Sai mật khẩu! Bạn không có quyền truy cập.");
-            window.location.href = "/"; // Đẩy về trang chủ ngay lập tức
+    <!-- KHÓA BẢO MẬT ADMIN -->
+    <script>
+        const ADMIN_PASS = "123456"; // Đổi mật khẩu Admin tại đây
+        if (sessionStorage.getItem("admin_auth") !== "true") {
+            let p = prompt("🔐 Nhập mật khẩu Quản Trị Viên:");
+            if (p === ADMIN_PASS) sessionStorage.setItem("admin_auth", "true");
+            else { alert("❌ Mật khẩu không chính xác!"); window.location.href = "/"; }
         }
-    }
-</script>
+    </script>
 
     <div class="container-fluid">
         <!-- HEADER -->
         <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
             <h2><i class="fa-solid fa-user-shield text-primary me-2"></i> TypingSpeedZ - Admin Dashboard</h2>
-            <a href="/" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-house me-1"></i> Về trang chủ</a>
+            <a href="/" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-house me-1"></i> Trang chủ</a>
         </div>
 
-        <!-- THỐNG KÊ ONLINE -->
+        <!-- THỐNG KÊ THỜI GIAN THỰC -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <div class="card p-3 stat-card">
-                    <div class="d-flex align-items-center justify-content-between">
+                <div class="card p-3 border-start border-4 border-primary">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-secondary mb-1">Tổng Số Người Dùng</h6>
                             <h3 class="mb-0" id="totalUsersCount">0</h3>
@@ -56,23 +48,23 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card p-3 stat-card online">
-                    <div class="d-flex align-items-center justify-content-between">
+                <div class="card p-3 border-start border-4 border-success">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-secondary mb-1">Đang Hoạt Động (Online)</h6>
+                            <h6 class="text-secondary mb-1">Đang Online (5 phút qua)</h6>
                             <h3 class="mb-0 text-success" id="onlineUsersCount">0</h3>
                         </div>
-                        <i class="fa-solid fa-circle-dot fa-2x text-success"></i>
+                        <i class="fa-solid fa-signal fa-2x text-success"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- BẢNG QUẢN LÝ NGƯỜI DÙNG -->
+        <!-- BẢNG QUẢN LÝ -->
         <div class="card p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i> Danh Sách Người Chơi</h5>
-                <button class="btn btn-sm btn-primary" onclick="loadAdminData()"><i class="fa-solid fa-rotate me-1"></i> Làm mới</button>
+                <button class="btn btn-sm btn-primary" onclick="loadData()"><i class="fa-solid fa-rotate me-1"></i> Làm mới</button>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover table-dark align-middle">
@@ -80,74 +72,88 @@
                         <tr>
                             <th>ID</th>
                             <th>Tài khoản</th>
-                            <th>Email</th>
-                            <th>WPM</th>
-                            <th>Chính xác (%)</th>
-                            <th>Trạng thái Khoá</th>
+                            <th>Mật khẩu</th>
+                            <th>WPM (Điểm)</th>
+                            <th>Độ chính xác</th>
+                            <th>Số bài đã gõ</th>
+                            <th>Trạng thái</th>
                             <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
-                        <tr><td colspan="7" class="text-center py-4">Đang tải dữ liệu...</td></tr>
+                        <tr><td colspan="8" class="text-center py-4">Đang tải...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL XEM HỒ SƠ & SỬA ĐIỂM -->
-    <div class="modal fade" id="editUserModal" tabindex="-1">
+    <!-- MODAL 1: MỤC RIÊNG SỬA WPM & BẢNG XẾP HẠNG -->
+    <div class="modal fade" id="scoreModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-user-pen me-2"></i> Hồ Sơ & Sửa Điểm User</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fa-solid fa-trophy me-2"></i> Chỉnh Sửa WPM & Bảng Xếp Hạng</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="editUserId">
+                    <input type="hidden" id="scoreUserId">
+                    <p>Sửa thành tích cho user: <strong id="scoreUsername" class="text-warning"></strong></p>
                     <div class="mb-3">
-                        <label class="form-label">Tên tài khoản</label>
-                        <input type="text" id="editUsername" class="form-control">
+                        <label class="form-label text-warning fw-bold">Điểm WPM cao nhất (Rank)</label>
+                        <input type="number" id="scoreWpm" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="editEmail" class="form-control">
+                        <label class="form-label text-info fw-bold">Tỉ lệ chính xác (%)</label>
+                        <input type="number" id="scoreAccuracy" class="form-control" min="0" max="100">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu</label>
-                        <input type="text" id="editPassword" class="form-control">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-warning">Điểm WPM</label>
-                            <input type="number" id="editWpm" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-info">Tỉ lệ chính xác (%)</label>
-                            <input type="number" id="editAccuracy" class="form-control" min="0" max="100">
-                        </div>
+                        <label class="form-label text-success fw-bold">Số lượt bài đã gõ</label>
+                        <input type="number" id="scoreTests" class="form-control">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-success" onclick="saveUserChanges()">Lưu thay đổi</button>
+                    <button type="button" class="btn btn-warning" onclick="saveScoreChanges()">Cập nhật BXH</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL KHÓA TÀI KHOẢN -->
-    <div class="modal fade" id="banUserModal" tabindex="-1">
+    <!-- MODAL 2: XEM & SỬA HỒ SƠ -->
+    <div class="modal fade" id="profileModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-danger"><i class="fa-solid fa-lock me-2"></i> Khóa Tài Khoản</h5>
+                    <h5 class="modal-title"><i class="fa-solid fa-user-gear me-2"></i> Hồ Sơ Người Dùng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="profileUserId">
+                    <div class="mb-3"><label class="form-label">Tên tài khoản</label><input type="text" id="profileUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Email</label><input type="email" id="profileEmail" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="text" id="profilePassword" class="form-control"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProfileChanges()">Lưu hồ sơ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: KHÓA TÀI KHOẢN -->
+    <div class="modal fade" id="banModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fa-solid fa-lock me-2"></i> Khóa Tài Khoản</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="banUserId">
-                    <p>Chọn thời gian muốn khóa tài khoản <strong id="banUsername" class="text-warning"></strong>:</p>
-                    <select id="banDurationSelect" class="form-select mb-3">
+                    <p>Chọn thời gian khóa cho <strong id="banUsername" class="text-warning"></strong>:</p>
+                    <select id="banSelect" class="form-select mb-3">
                         <option value="60">1 Giờ</option>
                         <option value="1440">24 Giờ (1 Ngày)</option>
                         <option value="10080">7 Ngày</option>
@@ -157,7 +163,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmBanUser()">Xác nhận Khóa</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmBan()">Xác nhận Khóa</button>
                 </div>
             </div>
         </div>
@@ -166,157 +172,144 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API_URL = "/api/index";
-        let editModal, banModal;
+        let scoreModal, profileModal, banModal;
 
         document.addEventListener("DOMContentLoaded", () => {
-            editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
-            banModal = new bootstrap.Modal(document.getElementById('banUserModal'));
-            loadAdminData();
-            // Tự động làm mới số liệu mỗi 30 giây
-            setInterval(loadAdminData, 30000);
+            scoreModal = new bootstrap.Modal(document.getElementById('scoreModal'));
+            profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+            banModal = new bootstrap.Modal(document.getElementById('banModal'));
+            loadData();
+            setInterval(loadData, 20000);
         });
 
-        // 1. Lấy dữ liệu danh sách user & số người online
-        async function loadAdminData() {
-            try {
-                const res = await fetch(`${API_URL}?action=admin_get_users`);
-                const data = await res.json();
+        async function loadData() {
+            const res = await fetch(`${API_URL}?action=admin_get_users`);
+            const data = await res.json();
 
-                document.getElementById("totalUsersCount").innerText = data.total_users || 0;
-                document.getElementById("onlineUsersCount").innerText = data.online_users || 0;
+            document.getElementById("totalUsersCount").innerText = data.total_users || 0;
+            document.getElementById("onlineUsersCount").innerText = data.online_users || 0;
 
-                const tbody = document.getElementById("userTableBody");
-                tbody.innerHTML = "";
+            const tbody = document.getElementById("userTableBody");
+            tbody.innerHTML = "";
 
-                data.users.forEach(u => {
-                    const isBanned = u.banned_until && new Date(u.banned_until) > new Date();
-                    let banStatusText = '<span class="badge bg-success">Hoạt động</span>';
-                    
-                    if (isBanned) {
-                        const banUntil = new Date(u.banned_until);
-                        banStatusText = banUntil.getFullYear() > 2090 
-                            ? '<span class="badge bg-danger">Khóa Vĩnh Viễn</span>'
-                            : `<span class="badge bg-warning text-dark">Khóa đến ${banUntil.toLocaleTimeString()} ${banUntil.toLocaleDateString()}</span>`;
-                    }
+            data.users.forEach(u => {
+                const isBanned = u.banned_until && new Date(u.banned_until) > new Date();
+                let banStatus = isBanned 
+                    ? '<span class="badge bg-danger">Đang bị khóa</span>' 
+                    : '<span class="badge bg-success">Hoạt động</span>';
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${u.id}</td>
-                            <td><strong>${u.username}</strong> ${u.role === 'admin' ? '<span class="badge bg-primary">Admin</span>' : ''}</td>
-                            <td>${u.email || 'N/A'}</td>
-                            <td class="text-warning fw-bold">${u.max_wpm || 0}</td>
-                            <td class="text-info fw-bold">${u.accuracy || 100}%</td>
-                            <td>${banStatusText}</td>
-                            <td>
-                                <button class="btn btn-sm btn-info me-1" onclick='openEditModal(${JSON.stringify(u)})'><i class="fa-solid fa-pen-to-square"></i> Hồ sơ/Sửa</button>
-                                ${isBanned 
-                                    ? `<button class="btn btn-sm btn-success me-1" onclick="unbanUser(${u.id})"><i class="fa-solid fa-key"></i> Mở khóa</button>` 
-                                    : `<button class="btn btn-sm btn-warning me-1" onclick="openBanModal(${u.id}, '${u.username}')"><i class="fa-solid fa-ban"></i> Khóa</button>`
-                                }
-                                <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                alert("Lỗi kết nối API Admin!");
-            }
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${u.id}</td>
+                        <td><strong>${u.username}</strong></td>
+                        <td><code>${u.password}</code></td>
+                        <td class="text-warning fw-bold fs-5">${u.max_wpm || 0}</td>
+                        <td class="text-info fw-bold">${u.accuracy || 100}%</td>
+                        <td class="text-success fw-bold"><i class="fa-solid fa-keyboard me-1"></i>${u.tests_completed || 0} bài</td>
+                        <td>${banStatus}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-1" onclick='openScoreModal(${JSON.stringify(u)})'><i class="fa-solid fa-trophy"></i> Sửa WPM/BXH</button>
+                            <button class="btn btn-sm btn-info me-1" onclick='openProfileModal(${JSON.stringify(u)})'><i class="fa-solid fa-user-pen"></i> Hồ sơ</button>
+                            ${isBanned 
+                                ? `<button class="btn btn-sm btn-success me-1" onclick="unban(${u.id})">Mở khóa</button>` 
+                                : `<button class="btn btn-sm btn-outline-warning me-1" onclick="openBan(${u.id}, '${u.username}')">Khóa</button>`
+                            }
+                            <button class="btn btn-sm btn-danger" onclick="delUser(${u.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        // 2. Mở Modal xem hồ sơ & sửa thông tin / WPM / Accuracy
-        function openEditModal(user) {
-            document.getElementById("editUserId").value = user.id;
-            document.getElementById("editUsername").value = user.username;
-            document.getElementById("editEmail").value = user.email || "";
-            document.getElementById("editPassword").value = user.password;
-            document.getElementById("editWpm").value = user.max_wpm || 0;
-            document.getElementById("editAccuracy").value = user.accuracy || 100;
-            editModal.show();
+        // Mở mục riêng sửa WPM / BXH / Số lượt gõ
+        function openScoreModal(u) {
+            document.getElementById("scoreUserId").value = u.id;
+            document.getElementById("scoreUsername").innerText = u.username;
+            document.getElementById("scoreWpm").value = u.max_wpm || 0;
+            document.getElementById("scoreAccuracy").value = u.accuracy || 100;
+            document.getElementById("scoreTests").value = u.tests_completed || 0;
+            scoreModal.show();
         }
 
-        // 3. Lưu thông tin vừa chỉnh sửa
-        async function saveUserChanges() {
-            const bodyData = {
-                action: "admin_update_user",
-                id: document.getElementById("editUserId").value,
-                username: document.getElementById("editUsername").value,
-                email: document.getElementById("editEmail").value,
-                password: document.getElementById("editPassword").value,
-                max_wpm: document.getElementById("editWpm").value,
-                accuracy: document.getElementById("editAccuracy").value
-            };
-
-            const res = await fetch(API_URL, {
+        async function saveScoreChanges() {
+            await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify({
+                    action: "admin_update_score",
+                    id: document.getElementById("scoreUserId").value,
+                    max_wpm: document.getElementById("scoreWpm").value,
+                    accuracy: document.getElementById("scoreAccuracy").value,
+                    tests_completed: document.getElementById("scoreTests").value
+                })
             });
-            const data = await res.json();
-            
-            if (data.status === "success") {
-                alert("Đã cập nhật hồ sơ và điểm số thành công!");
-                editModal.hide();
-                loadAdminData();
-            } else {
-                alert(data.message || "Lỗi cập nhật!");
-            }
+            scoreModal.hide();
+            loadData();
         }
 
-        // 4. Khóa tài khoản theo khoảng thời gian
-        function openBanModal(id, username) {
+        // Xem & Sửa Hồ sơ
+        function openProfileModal(u) {
+            document.getElementById("profileUserId").value = u.id;
+            document.getElementById("profileUsername").value = u.username;
+            document.getElementById("profileEmail").value = u.email || "";
+            document.getElementById("profilePassword").value = u.password;
+            profileModal.show();
+        }
+
+        async function saveProfileChanges() {
+            await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "admin_update_user",
+                    id: document.getElementById("profileUserId").value,
+                    username: document.getElementById("profileUsername").value,
+                    email: document.getElementById("profileEmail").value,
+                    password: document.getElementById("profilePassword").value
+                })
+            });
+            profileModal.hide();
+            loadData();
+        }
+
+        // Khóa & Mở Khóa
+        function openBan(id, name) {
             document.getElementById("banUserId").value = id;
-            document.getElementById("banUsername").innerText = username;
+            document.getElementById("banUsername").innerText = name;
             banModal.show();
         }
 
-        async function confirmBanUser() {
-            const id = document.getElementById("banUserId").value;
-            const minutes = Number(document.getElementById("banDurationSelect").value);
-
-            const res = await fetch(API_URL, {
+        async function confirmBan() {
+            await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "admin_ban_user", id, minutes })
+                body: JSON.stringify({
+                    action: "admin_ban_user",
+                    id: document.getElementById("banUserId").value,
+                    minutes: Number(document.getElementById("banSelect").value)
+                })
             });
-
-            const data = await res.json();
-            if (data.status === "success") {
-                alert("Đã khóa tài khoản thành công!");
-                banModal.hide();
-                loadAdminData();
-            }
+            banModal.hide();
+            loadData();
         }
 
-        // 5. Mở khóa tài khoản
-        async function unbanUser(id) {
-            if (!confirm("Bạn có chắc chắn muốn mở khóa tài khoản này?")) return;
-            
-            const res = await fetch(API_URL, {
+        async function unban(id) {
+            await fetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "admin_ban_user", id, minutes: 0 })
             });
-
-            const data = await res.json();
-            if (data.status === "success") {
-                alert("Đã mở khóa tài khoản thành công!");
-                loadAdminData();
-            }
+            loadData();
         }
 
-        // 6. Xóa tài khoản
-        async function deleteUser(id) {
-            if (!confirm("Bạn có chắc chắn muốn xóa vĩnh viễn người dùng này?")) return;
-
-            const res = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "admin_delete_user", id })
-            });
-
-            const data = await res.json();
-            if (data.status === "success") {
-                loadAdminData();
+        async function delUser(id) {
+            if (confirm("Xóa tài khoản này?")) {
+                await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "admin_delete_user", id })
+                });
+                loadData();
             }
         }
     </script>
