@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TypingSpeedZ - Admin Dashboard</title>
+    <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,55 +12,40 @@
         .table { color: #f8fafc; border-color: #334155; }
         .modal-content { background-color: #1e293b; color: #fff; }
         .form-control, .form-select { background-color: #0f172a; border-color: #334155; color: #fff; }
-        .form-control:focus, .form-select:focus { background-color: #0f172a; color: #fff; }
     </style>
 </head>
 <body class="p-4">
 
-    <!-- KHÓA BẢO MẬT TRANG ADMIN -->
     <script>
-        const ADMIN_PASS = "123456"; // Đổi mật khẩu Admin tại đây
+        const ADMIN_PASS = "123456"; 
         if (sessionStorage.getItem("admin_auth") !== "true") {
             let p = prompt("🔐 Nhập mật khẩu Quản Trị Viên:");
             if (p === ADMIN_PASS) sessionStorage.setItem("admin_auth", "true");
-            else { alert("❌ Mật khẩu không chính xác!"); window.location.href = "/"; }
+            else { alert("❌ Sai mật khẩu!"); window.location.href = "/"; }
         }
     </script>
 
     <div class="container-fluid">
-        <!-- HEADER -->
         <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
-            <h2><i class="fa-solid fa-user-shield text-primary me-2"></i> TypingSpeedZ - Admin Dashboard</h2>
+            <h2><i class="fa-solid fa-user-shield text-primary me-2"></i> Admin Dashboard</h2>
             <a href="/" class="btn btn-outline-light btn-sm"><i class="fa-solid fa-house me-1"></i> Trang chủ</a>
         </div>
 
-        <!-- THỐNG KÊ THỜI GIAN THỰC -->
         <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <div class="card p-3 border-start border-4 border-primary">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-secondary mb-1">Tổng Số Người Dùng</h6>
-                            <h3 class="mb-0" id="totalUsersCount">0</h3>
-                        </div>
-                        <i class="fa-solid fa-users fa-2x text-primary"></i>
-                    </div>
+                    <h6 class="text-secondary mb-1">Tổng Số Người Dùng</h6>
+                    <h3 class="mb-0" id="totalUsersCount">0</h3>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card p-3 border-start border-4 border-success">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-secondary mb-1">Đang Online (5 phút qua)</h6>
-                            <h3 class="mb-0 text-success" id="onlineUsersCount">0</h3>
-                        </div>
-                        <i class="fa-solid fa-signal fa-2x text-success"></i>
-                    </div>
+                    <h6 class="text-secondary mb-1">Đang Online (5 phút qua)</h6>
+                    <h3 class="mb-0 text-success" id="onlineUsersCount">0</h3>
                 </div>
             </div>
         </div>
 
-        <!-- BẢNG QUẢN LÝ NGƯỜI DÙNG -->
         <div class="card p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0"><i class="fa-solid fa-list me-2"></i> Danh Sách Người Chơi</h5>
@@ -70,96 +55,70 @@
                 <table class="table table-hover table-dark align-middle">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Tài khoản</th>
-                            <th>Mật khẩu</th>
-                            <th>WPM (Điểm)</th>
-                            <th>Độ chính xác</th>
-                            <th>Trạng thái Khoá</th>
-                            <th>Hành động</th>
+                            <th>ID</th><th>Tài khoản</th><th>Mật khẩu</th><th>WPM</th><th>Độ chính xác</th><th>Trạng thái</th><th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody">
-                        <tr><td colspan="7" class="text-center py-4">Đang tải dữ liệu...</td></tr>
+                        <tr><td colspan="7" class="text-center py-4">Đang tải...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 1: MỤC RIÊNG SỬA WPM & BẢNG XẾP HẠNG -->
+    <!-- MODAL SỬA WPM/BXH -->
     <div class="modal fade" id="scoreModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title"><i class="fa-solid fa-trophy me-2"></i> Chỉnh Sửa WPM & Bảng Xếp Hạng</h5>
+                    <h5 class="modal-title">Sửa WPM & Bảng Xếp Hạng</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="scoreUserId">
-                    <p>Sửa thành tích cho user: <strong id="scoreUsername" class="text-warning"></strong></p>
-                    <div class="mb-3">
-                        <label class="form-label text-warning fw-bold">Điểm WPM cao nhất (Rank)</label>
-                        <input type="number" id="scoreWpm" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-info fw-bold">Tỉ lệ chính xác (%)</label>
-                        <input type="number" id="scoreAccuracy" class="form-control" min="0" max="100">
-                    </div>
+                    <p>Sửa cho user: <strong id="scoreUsername" class="text-warning"></strong></p>
+                    <div class="mb-3"><label class="form-label">WPM</label><input type="number" id="scoreWpm" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Độ chính xác (%)</label><input type="number" id="scoreAccuracy" class="form-control"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                     <button type="button" class="btn btn-warning" onclick="saveScoreChanges()">Cập nhật BXH</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 2: XEM & SỬA HỒ SƠ -->
+    <!-- MODAL SỬA HỒ SƠ -->
     <div class="modal fade" id="profileModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fa-solid fa-user-gear me-2"></i> Hồ Sơ Người Dùng</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"><h5 class="modal-title">Hồ Sơ Nguồn Dùng</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="profileUserId">
-                    <div class="mb-3"><label class="form-label">Tên tài khoản</label><input type="text" id="profileUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label">Tài khoản</label><input type="text" id="profileUsername" class="form-control"></div>
                     <div class="mb-3"><label class="form-label">Email</label><input type="email" id="profileEmail" class="form-control"></div>
                     <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="text" id="profilePassword" class="form-control"></div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" onclick="saveProfileChanges()">Lưu hồ sơ</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveProfileChanges()">Lưu hồ sơ</button></div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: KHÓA TÀI KHOẢN THEO THỜI GIAN -->
+    <!-- MODAL KHÓA ACC -->
     <div class="modal fade" id="banModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-lock me-2"></i> Khóa Tài Khoản</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header bg-danger text-white"><h5 class="modal-title">Khóa Tài Khoản</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
                 <div class="modal-body">
                     <input type="hidden" id="banUserId">
-                    <p>Chọn thời gian khóa cho <strong id="banUsername" class="text-warning"></strong>:</p>
+                    <p>Khóa tài khoản: <strong id="banUsername" class="text-warning"></strong></p>
                     <select id="banSelect" class="form-select mb-3">
                         <option value="60">1 Giờ</option>
-                        <option value="1440">24 Giờ (1 Ngày)</option>
+                        <option value="1440">1 Ngày</option>
                         <option value="10080">7 Ngày</option>
-                        <option value="43200">30 Ngày</option>
                         <option value="-1">Khóa Vĩnh Viễn</option>
                     </select>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmBan()">Xác nhận Khóa</button>
-                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-danger" onclick="confirmBan()">Xác nhận Khóa</button></div>
             </div>
         </div>
     </div>
@@ -174,7 +133,6 @@
             profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
             banModal = new bootstrap.Modal(document.getElementById('banModal'));
             loadData();
-            setInterval(loadData, 20000);
         });
 
         async function loadData() {
@@ -189,25 +147,18 @@
 
             data.users.forEach(u => {
                 const isBanned = u.banned_until && new Date(u.banned_until) > new Date();
-                let banStatus = isBanned 
-                    ? '<span class="badge bg-danger">Đang bị khóa</span>' 
-                    : '<span class="badge bg-success">Hoạt động</span>';
-
                 tbody.innerHTML += `
                     <tr>
                         <td>${u.id}</td>
                         <td><strong>${u.username}</strong></td>
                         <td><code>${u.password}</code></td>
-                        <td class="text-warning fw-bold fs-5">${u.max_wpm || 0}</td>
-                        <td class="text-info fw-bold">${u.accuracy || 100}%</td>
-                        <td>${banStatus}</td>
+                        <td class="text-warning fw-bold">${u.max_wpm || 0}</td>
+                        <td class="text-info">${u.accuracy || 100}%</td>
+                        <td>${isBanned ? '<span class="badge bg-danger">Bị khóa</span>' : '<span class="badge bg-success">Hoạt động</span>'}</td>
                         <td>
-                            <button class="btn btn-sm btn-warning me-1" onclick='openScoreModal(${JSON.stringify(u)})'><i class="fa-solid fa-trophy"></i> Sửa WPM/BXH</button>
-                            <button class="btn btn-sm btn-info me-1" onclick='openProfileModal(${JSON.stringify(u)})'><i class="fa-solid fa-user-pen"></i> Hồ sơ</button>
-                            ${isBanned 
-                                ? `<button class="btn btn-sm btn-success me-1" onclick="unban(${u.id})">Mở khóa</button>` 
-                                : `<button class="btn btn-sm btn-outline-warning me-1" onclick="openBan(${u.id}, '${u.username}')">Khóa</button>`
-                            }
+                            <button class="btn btn-sm btn-warning me-1" onclick='openScoreModal(${JSON.stringify(u)})'>Sửa WPM</button>
+                            <button class="btn btn-sm btn-info me-1" onclick='openProfileModal(${JSON.stringify(u)})'>Hồ sơ</button>
+                            ${isBanned ? `<button class="btn btn-sm btn-success me-1" onclick="unban(${u.id})">Mở khóa</button>` : `<button class="btn btn-sm btn-outline-warning me-1" onclick="openBan(${u.id}, '${u.username}')">Khóa</button>`}
                             <button class="btn btn-sm btn-danger" onclick="delUser(${u.id})"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -215,7 +166,6 @@
             });
         }
 
-        // Mở mục riêng sửa WPM & Độ chính xác
         function openScoreModal(u) {
             document.getElementById("scoreUserId").value = u.id;
             document.getElementById("scoreUsername").innerText = u.username;
@@ -239,7 +189,6 @@
             loadData();
         }
 
-        // Xem & Sửa Hồ sơ
         function openProfileModal(u) {
             document.getElementById("profileUserId").value = u.id;
             document.getElementById("profileUsername").value = u.username;
@@ -264,7 +213,6 @@
             loadData();
         }
 
-        // Khóa & Mở Khóa theo thời gian
         function openBan(id, name) {
             document.getElementById("banUserId").value = id;
             document.getElementById("banUsername").innerText = name;
@@ -295,7 +243,7 @@
         }
 
         async function delUser(id) {
-            if (confirm("Xóa vĩnh viễn tài khoản này?")) {
+            if (confirm("Xóa tài khoản?")) {
                 await fetch(API_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
