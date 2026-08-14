@@ -19,7 +19,7 @@
                     <option value="vi">🇻🇳 Tiếng Việt</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
-                <a href="https://discord.gg/3HRkTTYZWp" target="_blank" class="btn-discord"><i class="fa-brands fa-discord"></i></a>
+                <a href="https://discord.gg/3HRkTTYZWp" target="_blank" class="btn-discord" title="Nhóm Discord"><i class="fa-brands fa-discord"></i></a>
                 <div id="user-area">
                     <button class="btn-primary" onclick="openAuth()">Đăng Nhập</button>
                 </div>
@@ -43,7 +43,7 @@
             </button>
         </div>
 
-        <!-- Section 1: Typing -->
+        <!-- Section 1: Gõ Phím -->
         <div id="section-typing" class="card">
             <div class="card-header">
                 <h2><i class="fa-solid fa-keyboard"></i> Luyện Gõ Phím</h2>
@@ -55,25 +55,31 @@
             </div>
 
             <div class="input-row">
-                <!-- autocapitalize="none" & autocorrect="off" giúp bàn phím ĐT tự viết chữ thường -->
                 <input type="text" id="word-input" placeholder="Gõ từ tại đây và nhấn Space..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" autofocus>
                 <button id="restart-btn" class="btn-reload" onclick="resetGame()"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
         </div>
 
-        <!-- Section 2: Leaderboard -->
+        <!-- Section 2: Bảng Xếp Hạng -->
         <div id="section-leaderboard" class="card hidden">
             <div class="card-header">
                 <h2><i class="fa-solid fa-ranking-star"></i> Top Bảng Xếp Hạng</h2>
             </div>
+
+            <!-- Khung Hạng Của Bạn -->
+            <div id="my-rank-banner" class="my-rank-box">
+                <span><i class="fa-solid fa-user-tag"></i> Hạng của bạn: <strong id="my-rank-val" style="color:#eab308;">Chưa đăng nhập</strong></span>
+                <span>WPM: <strong id="my-rank-wpm" style="color:#22c55e;">0</strong></span>
+            </div>
+
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
+                            <th>Quốc gia</th>
                             <th>Người chơi</th>
-                            <th>WPM</th>
-                            <th>Chính xác</th>
+                            <th>WPM Cao Nhất</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body"></tbody>
@@ -81,17 +87,13 @@
             </div>
         </div>
 
-        <!-- Section 3: Profile -->
+        <!-- Section 3: Hồ Sơ -->
         <div id="section-profile" class="card hidden">
             <div class="card-header">
                 <h2><i class="fa-solid fa-id-card"></i> Hồ Sơ Cá Nhân</h2>
             </div>
-            
-            <div id="profile-not-login" class="profile-empty">
-                <p>Vui lòng <a href="#" onclick="openAuth()">Đăng nhập</a> để xem thông tin.</p>
-            </div>
 
-            <div id="profile-content" class="profile-grid hidden">
+            <div id="profile-content" class="profile-grid">
                 <div class="profile-info-box">
                     <p><strong>Tên tài khoản:</strong> <span id="prof-username">-</span></p>
                     <p><strong>Email:</strong> <span id="prof-email">-</span></p>
@@ -121,7 +123,7 @@
             </div>
         </div>
 
-        <!-- Section 4: Admin Management -->
+        <!-- Section 4: Admin -->
         <div id="section-admin" class="card hidden">
             <div class="card-header">
                 <h2><i class="fa-solid fa-user-shield"></i> Quản Lý Thành Viên (Admin)</h2>
@@ -143,7 +145,7 @@
         </div>
     </div>
 
-    <!-- Modal Kết quả -->
+    <!-- Modal Kết Quả -->
     <div id="result-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <h3><i class="fa-solid fa-medal"></i> Kết Quả Bài Test</h3>
@@ -161,7 +163,7 @@
         </div>
     </div>
 
-    <!-- Modal Auth -->
+    <!-- Modal Đăng Nhập / Đăng Ký -->
     <div id="auth-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <span class="close-x" onclick="closeAuth()">&times;</span>
@@ -173,9 +175,14 @@
                 <input type="text" id="auth-username" placeholder="Tên tài khoản" autocapitalize="none" required>
                 <input type="email" id="auth-email" placeholder="Địa chỉ Email" class="hidden">
                 <input type="password" id="auth-password" placeholder="Mật khẩu" required>
-                <input type="password" id="auth-confirm-password" placeholder="Nhập lại mật khẩu" class="hidden">
                 <button type="submit" id="auth-submit" class="btn-primary btn-full">Đăng nhập</button>
             </form>
+            
+            <!-- Hỗ trợ Discord theo yêu cầu -->
+            <div class="support-link">
+                Bạn cần hỗ trợ? Vô nhóm <a href="https://discord.gg/3HRkTTYZWp" target="_blank"><i class="fa-brands fa-discord"></i> Discord</a> để được hỗ trợ.
+            </div>
+
             <p id="auth-msg" class="err-msg"></p>
         </div>
     </div>
@@ -186,9 +193,9 @@
             <span class="close-x" onclick="closeChangePassModal()">&times;</span>
             <h3><i class="fa-solid fa-key"></i> Đổi Mật Khẩu</h3>
             <form onsubmit="handleChangePass(event)" style="margin-top:15px;">
-                <input type="password" id="pass-old" placeholder="Mật khẩu cũ" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
-                <input type="password" id="pass-new" placeholder="Mật khẩu mới" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
-                <input type="password" id="pass-confirm" placeholder="Xác nhận mật khẩu mới" required style="width:100%; margin-bottom:10px; padding:10px; background:#0f172a; border:1px solid #334155; color:white; border-radius:6px;">
+                <input type="password" id="pass-old" placeholder="Mật khẩu cũ" required class="input-modal">
+                <input type="password" id="pass-new" placeholder="Mật khẩu mới" required class="input-modal">
+                <input type="password" id="pass-confirm" placeholder="Xác nhận mật khẩu mới" required class="input-modal">
                 <button type="submit" class="btn-primary btn-full">Xác Nhận Đổi</button>
             </form>
             <p id="pass-msg" class="err-msg"></p>
