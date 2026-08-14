@@ -18,14 +18,16 @@
             <a class="brand-title" href="#"><i class="fa-solid fa-keyboard me-2"></i>TypingSpeed</a>
             
             <div class="d-flex align-items-center gap-2">
-                <select class="form-select form-select-sm" style="width: auto;">
+                <!-- Bộ chọn Ngôn Ngữ -->
+                <select class="form-select form-select-sm" id="langSelect" onchange="changeLanguage()" style="width: auto; cursor: pointer;">
                     <option value="vi">🇻🇳 Tiếng Việt</option>
+                    <option value="en">🇺🇸 English</option>
                 </select>
                 <a href="https://discord.gg" target="_blank" class="btn btn-sm text-white" style="background-color: #5865F2;">
                     <i class="fa-brands fa-discord me-1"></i> Discord
                 </a>
                 <div id="authNav">
-                    <button class="btn btn-sm btn-primary" style="background-color: var(--primary-purple); border: none;" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng Nhập</button>
+                    <button class="btn btn-sm btn-primary" id="btnNavLogin" style="background-color: var(--primary-purple); border: none;" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng Nhập</button>
                 </div>
             </div>
         </div>
@@ -35,16 +37,16 @@
         
         <!-- THANH CHUYỂN TAB -->
         <div class="d-flex gap-2 mb-4">
-            <button class="tab-btn active" onclick="switchTab('game')"><i class="fa-solid fa-bolt me-2"></i>Kiểm Tra Gõ Phím</button>
-            <button class="tab-btn" onclick="switchTab('leaderboard')"><i class="fa-solid fa-trophy me-2"></i>Bảng Xếp Hạng</button>
-            <button class="tab-btn" onclick="switchTab('profile')"><i class="fa-solid fa-user me-2"></i>Hồ Sơ</button>
+            <button class="tab-btn active" id="tabBtnGame" onclick="switchTab('game')"><i class="fa-solid fa-bolt me-2"></i>Kiểm Tra Gõ Phím</button>
+            <button class="tab-btn" id="tabBtnLeaderboard" onclick="switchTab('leaderboard')"><i class="fa-solid fa-trophy me-2"></i>Bảng Xếp Hạng</button>
+            <button class="tab-btn" id="tabBtnProfile" onclick="switchTab('profile')"><i class="fa-solid fa-user me-2"></i>Hồ Sơ</button>
         </div>
 
         <!-- TAB 1: KIỂM TRA GÕ PHÍM -->
         <div id="tab-game" class="tab-content">
             <div class="game-card">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-keyboard me-2"></i>Luyện Gõ Phím</h5>
+                    <h5 class="mb-0 fw-bold" id="titlePractice"><i class="fa-solid fa-keyboard me-2"></i>Luyện Gõ Phím</h5>
                     <span class="badge-timer" id="timer">60s</span>
                 </div>
 
@@ -54,24 +56,24 @@
                 <!-- Ô NHẬP & BUTTON -->
                 <div class="d-flex gap-2">
                     <input type="text" id="inputField" class="form-control typing-input" placeholder="Gõ từ tại đây và nhấn Space..." autocomplete="off">
-                    <button class="btn-reload" onclick="resetTest()"><i class="fa-solid fa-rotate-right me-1"></i> Làm mới</button>
+                    <button class="btn-reload" id="btnReload" onclick="resetTest()"><i class="fa-solid fa-rotate-right me-1"></i> Làm mới</button>
                 </div>
 
                 <!-- KẾT QUẢ SAU KHĨ GÕ -->
                 <div id="resultBox" class="result-card mt-4 d-none">
-                    <h4 class="fw-bold mb-3">🎉 Kết Quả Bài Kiểm Tra</h4>
+                    <h4 class="fw-bold mb-3" id="resTitle">🎉 Kết Quả Bài Kiểm Tra</h4>
                     <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <small class="text-muted d-block">TỐC ĐỘ (WPM)</small>
+                            <small class="text-muted d-block" id="lblSpeed">TỐC ĐỘ (WPM)</small>
                             <span class="res-val text-info" id="resWpm">0</span>
                         </div>
                         <div class="col-6">
-                            <small class="text-muted d-block">ĐỘ CHÍNH XÁC</small>
+                            <small class="text-muted d-block" id="lblAcc">ĐỘ CHÍNH XÁC</small>
                             <span class="res-val text-success" id="resAcc">0%</span>
                         </div>
                     </div>
                     <p class="text-secondary small" id="resMsg">Đã tự động lưu thành tích vào Bảng xếp hạng!</p>
-                    <button class="btn btn-primary btn-sm" onclick="resetTest()">Thử Bài Khác</button>
+                    <button class="btn btn-primary btn-sm" id="btnTryAgain" onclick="resetTest()">Thử Bài Khác</button>
                 </div>
             </div>
         </div>
@@ -79,15 +81,15 @@
         <!-- TAB 2: BẢNG XẾP HẠNG -->
         <div id="tab-leaderboard" class="tab-content d-none">
             <div class="game-card">
-                <h5 class="fw-bold mb-3"><i class="fa-solid fa-trophy text-warning me-2"></i>Bảng Xếp Hạng Top 100</h5>
+                <h5 class="fw-bold mb-3" id="titleBoard"><i class="fa-solid fa-trophy text-warning me-2"></i>Bảng Xếp Hạng Top 100</h5>
                 <div class="table-responsive">
                     <table class="table table-dark table-hover align-middle">
                         <thead>
                             <tr class="text-muted">
                                 <th>#</th>
-                                <th>Người chơi</th>
-                                <th class="text-end">Tốc độ (WPM)</th>
-                                <th class="text-end">Độ chính xác</th>
+                                <th id="thPlayer">Người chơi</th>
+                                <th class="text-end" id="thSpeed">Tốc độ (WPM)</th>
+                                <th class="text-end" id="thAcc">Độ chính xác</th>
                             </tr>
                         </thead>
                         <tbody id="leaderboardBody">
@@ -101,7 +103,7 @@
         <!-- TAB 3: HỒ SƠ TÀI KHOẢN -->
         <div id="tab-profile" class="tab-content d-none">
             <div class="game-card" id="profileContent">
-                <p class="text-center py-4 text-muted">Vui lòng <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a> để xem thông tin hồ sơ của bạn.</p>
+                <p class="text-center py-4 text-muted">Vui lòng đăng nhập để xem thông tin hồ sơ của bạn.</p>
             </div>
         </div>
 
@@ -112,16 +114,16 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Đăng Nhập</h5>
+                    <h5 class="modal-title fw-bold" id="modalLoginTitle">Đăng Nhập</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Tài khoản</label><input type="text" id="loginUsername" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="password" id="loginPassword" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label" id="lblUser">Tài khoản</label><input type="text" id="loginUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label" id="lblPass">Mật khẩu</label><input type="password" id="loginPassword" class="form-control"></div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-primary w-100" style="background-color: var(--primary-purple);" onclick="handleLogin()">Đăng Nhập</button>
-                    <p class="small text-center w-100 mt-2 mb-0">Chưa có tài khoản? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký ngay</a></p>
+                    <button type="button" class="btn btn-primary w-100" id="btnLoginSubmit" style="background-color: var(--primary-purple);" onclick="handleLogin()">Đăng Nhập</button>
+                    <p class="small text-center w-100 mt-2 mb-0" id="msgNoAcc">Chưa có tài khoản? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký ngay</a></p>
                 </div>
             </div>
         </div>
@@ -132,16 +134,16 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Đăng Kỳ Tài Khoản</h5>
+                    <h5 class="modal-title fw-bold" id="modalRegTitle">Đăng Kỳ Tài Khoản</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3"><label class="form-label">Tên tài khoản</label><input type="text" id="regUsername" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Email (không bắt buộc)</label><input type="email" id="regEmail" class="form-control"></div>
-                    <div class="mb-3"><label class="form-label">Mật khẩu</label><input type="password" id="regPassword" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label" id="lblRegUser">Tên tài khoản</label><input type="text" id="regUsername" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label" id="lblRegEmail">Email (không bắt buộc)</label><input type="email" id="regEmail" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label" id="lblRegPass">Mật khẩu</label><input type="password" id="regPassword" class="form-control"></div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-success w-100" onclick="handleRegister()">Tạo Tài Khoản</button>
+                    <button type="button" class="btn btn-success w-100" id="btnRegSubmit" onclick="handleRegister()">Tạo Tài Khoản</button>
                 </div>
             </div>
         </div>
