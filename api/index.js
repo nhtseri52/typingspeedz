@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const action = query.action || body.action;
 
     try {
-        // 1. ĐĂNG NHẬP (Có kiểm tra khóa tài khoản)
+        // 1. ĐĂNG NHẬP
         if (action === 'login') {
             const { data: u, error } = await supabase
                 .from('users')
@@ -31,29 +31,23 @@ export default async function handler(req, res) {
                 .single();
 
             if (u && !error) {
-                // Kiểm tra xem tài khoản có đang bị khóa hay không
-                if (u.banned_until) {
+                if (u.banned_until && new Date(u.banned_until) > new Date()) {
                     const banTime = new Date(u.banned_until);
-                    const now = new Date();
-                    if (banTime > now) {
-                        return res.status(403).json({
-                            status: "error",
-                            message: `Tài khoản của bạn đã bị khóa cho đến: ${banTime.toLocaleString('vi-VN')}`
-                        });
-                    }
+                    return res.status(403).json({
+                        status: "error",
+                        message: `Tài khoản bị khóa đến: ${banTime.toLocaleString('vi-VN')}`
+                    });
                 }
-                
-                // Cập nhật thời gian hoạt động gần nhất (để tính user online)
                 await supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', u.id);
                 return res.status(200).json({ status: "success", user: u });
             }
-            return res.status(400).json({ status: "error", message: "Tài khoản hoặc mật khẩu không chính xác!" });
+            return res.status(400).json({ status: "error", message: "Tài khoản/mật khẩu sai!" });
         }
 
         // 2. ĐĂNG KÝ
         if (action === 'register') {
             const { data: exists } = await supabase.from('users').select('id').eq('username', body.username).single();
-            if (exists) return res.status(400).json({ status: "error", message: "Tên tài khoản đã tồn tại!" });
+            if (exists) return res.status(400).json({ status: "error", message: "Tài khoản đã tồn tại!" });
 
             const { data: newUser, error } = await supabase
                 .from('users')
@@ -65,30 +59,33 @@ export default async function handler(req, res) {
                     role: "user",
                     max_wpm: 0,
                     accuracy: 0,
+                    tests_completed: 0,
                     last_active: new Date().toISOString()
                 }])
                 .select().single();
 
-            if (error) return res.status(400).json({ status: "error", message: "Không thể tạo tài khoản!" });
+            if (error) return res.status(400).json({ status: "error", message: "Không thể đăng ký!" });
             return res.status(200).json({ status: "success", user: newUser });
         }
 
-        // 3. LƯU ĐIỂM (SAVE SCORE)
+        // 3. LƯU ĐIỂM KHI GÕ XONG (Tăng số lượt gõ lên +1)
         if (action === 'save_score') {
             const wpm = Number(body.wpm);
             const accuracy = Number(body.accuracy || 100);
             const { data: u } = await supabase.from('users').select('*').eq('id', body.user_id).single();
 
             if (u) {
-                // Kiểm tra khóa tài khoản
                 if (u.banned_until && new Date(u.banned_until) > new Date()) {
-                    return res.status(403).json({ status: "error", message: "Tài khoản đang bị khóa, không thể lưu điểm!" });
+                    return res.status(403).json({ status: "error", message: "Tài khoản đang bị khóa!" });
                 }
 
                 let newMax = Math.max(u.max_wpm || 0, wpm);
+                let currentCompleted = (u.tests_completed || 0) + 1;
+
                 await supabase.from('users').update({
                     max_wpm: newMax,
                     accuracy: accuracy,
+                    tests_completed: currentCompleted,
                     last_active: new Date().toISOString()
                 }).eq('id', u.id);
 
@@ -101,7 +98,7 @@ export default async function handler(req, res) {
         if (action === 'get_leaderboard') {
             const { data: list } = await supabase
                 .from('users')
-                .select('id, username, country, max_wpm, accuracy, role')
+                .select('id, username, country, max_wpm, accuracy, tests_completed, role')
                 .order('max_wpm', { ascending: false })
                 .limit(100);
 
@@ -112,7 +109,6 @@ export default async function handler(req, res) {
         if (action === 'admin_get_users') {
             const { data: list } = await supabase.from('users').select('*').order('id', { ascending: true });
             
-            // Tính số lượng người dùng đang Online (hoạt động trong 5 phút qua)
             const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
             const onlineCount = list ? list.filter(u => u.last_active && u.last_active >= fiveMinsAgo).length : 0;
 
@@ -123,7 +119,7 @@ export default async function handler(req, res) {
             });
         }
 
-        // 6. ADMIN: SỬA THÔNG TIN / WPM / TỈ LỆ CHÍNH XÁC
+        // 6. ADMIN: SỬA HỒ SƠ CHUNG
         if (action === 'admin_update_user') {
             const { error } = await supabase
                 .from('users')
@@ -131,8 +127,6 @@ export default async function handler(req, res) {
                     username: body.username,
                     email: body.email,
                     password: body.password,
-                    max_wpm: Number(body.max_wpm || 0),
-                    accuracy: Number(body.accuracy || 100),
                     role: body.role || 'user'
                 })
                 .eq('id', body.id);
@@ -141,43 +135,45 @@ export default async function handler(req, res) {
             return res.status(200).json({ status: "success", message: "Cập nhật thành công!" });
         }
 
-        // 7. ADMIN: KHÓA TÀI KHOẢN THEO THỜI GIAN
+        // 7. ADMIN: MỤC RIÊNG SỬA WPM & BẢNG XẾP HẠNG & LƯỢT GÕ
+        if (action === 'admin_update_score') {
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    max_wpm: Number(body.max_wpm || 0),
+                    accuracy: Number(body.accuracy || 100),
+                    tests_completed: Number(body.tests_completed || 0)
+                })
+                .eq('id', body.id);
+
+            if (error) return res.status(400).json({ status: "error", message: "Lỗi sửa WPM!" });
+            return res.status(200).json({ status: "success", message: "Đã cập nhật Bảng xếp hạng thành công!" });
+        }
+
+        // 8. ADMIN: KHÓA TÀI KHOẢN
         if (action === 'admin_ban_user') {
-            const { id, minutes } = body; // minutes = -1 là khóa vĩnh viễn
+            const { id, minutes } = body;
             let bannedUntil = null;
 
             if (minutes === -1) {
-                bannedUntil = new Date('2099-12-31T23:59:59Z').toISOString(); // Khóa vĩnh viễn
+                bannedUntil = new Date('2099-12-31T23:59:59Z').toISOString();
             } else if (minutes > 0) {
                 bannedUntil = new Date(Date.now() + minutes * 60 * 1000).toISOString();
             }
 
-            const { error } = await supabase
-                .from('users')
-                .update({ banned_until: bannedUntil })
-                .eq('id', id);
-
-            if (error) return res.status(400).json({ status: "error", message: "Không thể thực hiện khóa!" });
-            return res.status(200).json({ status: "success", message: "Đã cập nhật trạng thái khóa!" });
+            await supabase.from('users').update({ banned_until: bannedUntil }).eq('id', id);
+            return res.status(200).json({ status: "success" });
         }
 
-        // 8. ADMIN: XÓA TÀI KHOẢN
+        // 9. ADMIN: XÓA TÀI KHOẢN
         if (action === 'admin_delete_user') {
             await supabase.from('users').delete().eq('id', body.id);
-            return res.status(200).json({ status: "success", message: "Đã xóa người dùng!" });
-        }
-
-        // 9. LẤY HỒ SƠ NGƯỜI DÙNG
-        if (action === 'get_profile') {
-            const userId = query.user_id || body.user_id;
-            const { data: u } = await supabase.from('users').select('*').eq('id', userId).single();
-            if (u) return res.status(200).json(u);
-            return res.status(404).json({ message: "Not found" });
+            return res.status(200).json({ status: "success" });
         }
 
     } catch (err) {
         return res.status(500).json({ status: "error", message: err.message });
     }
 
-    return res.status(200).json({ message: "Admin API Ready" });
+    return res.status(200).json({ message: "Admin API Running OK" });
 }
