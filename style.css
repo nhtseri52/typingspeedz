@@ -1,74 +1,168 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-body { background-color: #0f172a; color: #f8fafc; min-height: 100vh; }
+:root {
+    --bg-color: #121318;
+    --card-bg: #1a1c23;
+    --card-border: #282b36;
+    --primary-purple: #6366f1;
+    --primary-hover: #4f46e5;
+    --word-active: #2e3248;
+    --text-primary: #e2e8f0;
+    --text-muted: #64748b;
+    --correct: #4ade80;
+    --incorrect: #f87171;
+}
 
-.header { background-color: #1e293b; border-bottom: 1px solid #334155; padding: 12px 0; }
-.nav-container { max-width: 900px; margin: 0 auto; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
-.logo { font-size: 1.2rem; font-weight: bold; color: #38bdf8; }
-.nav-right { display: flex; gap: 10px; align-items: center; }
-#lang-select { background: #0f172a; color: #fff; border: 1px solid #334155; padding: 6px; border-radius: 6px; }
-.btn-discord { background: #5865F2; color: white; padding: 6px 10px; border-radius: 6px; text-decoration: none; }
-.btn-primary { background: #0284c7; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+}
 
-.app-wrap { max-width: 900px; margin: 20px auto; padding: 0 15px; }
-.main-tabs { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; }
-.tab-item { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 0.9rem; }
-.tab-item.active { background: #0284c7; color: white; border-color: #0284c7; }
+/* NAVBAR HEADER */
+.navbar {
+    background-color: var(--bg-color);
+    border-bottom: 1px solid var(--card-border);
+}
 
-.card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
-.hidden { display: none !important; }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.timer-badge { background: #38bdf8; color: #0f172a; font-weight: bold; padding: 4px 12px; border-radius: 20px; }
+.brand-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-purple);
+    text-decoration: none;
+}
 
-.words-wrapper { background: #0f172a; border-radius: 8px; padding: 15px; height: 120px; overflow: hidden; margin-bottom: 15px; border: 1px solid #334155; }
-.words-display { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 1.2rem; line-height: 1.6; }
-.word { color: #94a3b8; padding: 2px 4px; border-radius: 4px; }
-.word.current { background: #0284c7; color: #ffffff; font-weight: bold; }
-.word.correct { color: #22c55e; }
-.word.incorrect { color: #ef4444; text-decoration: line-through; }
+/* TABS CONTAINER */
+.tab-btn {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
 
-.input-row { display: flex; gap: 10px; }
-#word-input { flex: 1; background: #0f172a; border: 1px solid #334155; padding: 10px 14px; color: white; font-size: 1rem; border-radius: 8px; outline: none; }
-#word-input:focus { border-color: #38bdf8; }
-.btn-reload { background: #475569; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; }
+.tab-btn:hover {
+    color: #fff;
+    background-color: var(--card-border);
+}
 
-/* Bảng Xếp Hạng & Hạng Của Bạn */
-.my-rank-box { background: #0f172a; border: 1px solid #38bdf8; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-th, td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
-th { background: #0f172a; color: #94a3b8; }
+.tab-btn.active {
+    background-color: var(--primary-purple);
+    color: #fff;
+    border-color: var(--primary-purple);
+}
 
-/* Hồ Sơ */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 15px; }
-.stat-card { background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; }
-.stat-title { color: #94a3b8; font-size: 0.8rem; }
-.stat-value { font-size: 1.4rem; font-weight: bold; display: block; margin-top: 4px; }
-.stat-card.green .stat-value { color: #22c55e; }
-.stat-card.red .stat-value { color: #ef4444; }
-.stat-card.gold .stat-value { color: #eab308; }
-.stat-card.blue .stat-value { color: #38bdf8; }
+/* GAME CARD */
+.game-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 24px;
+}
 
-.profile-info-box p { margin-bottom: 8px; font-size: 0.95rem; }
+.badge-timer {
+    background-color: var(--primary-purple);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
 
-/* Modal & Form */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-box { background: #1e293b; padding: 20px; border-radius: 12px; width: 90%; max-width: 380px; position: relative; border: 1px solid #334155; }
-.close-x { position: absolute; top: 12px; right: 15px; font-size: 1.3rem; cursor: pointer; color: #94a3b8; }
-.tab-header { display: flex; margin-bottom: 15px; border-bottom: 1px solid #334155; }
-.tab-btn { flex: 1; background: none; border: none; color: #94a3b8; padding: 8px; cursor: pointer; font-weight: 600; }
-.tab-btn.active { color: #38bdf8; border-bottom: 2px solid #38bdf8; }
-#auth-form input, .input-modal { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 10px; color: white; border-radius: 6px; margin-bottom: 10px; outline: none; }
-.btn-full { width: 100%; margin-top: 5px; }
-.err-msg { color: #ef4444; font-size: 0.85rem; margin-top: 8px; }
+/* KHUNG GÕ PHÍM */
+.words-box {
+    background-color: #101216;
+    border-radius: 8px;
+    padding: 20px;
+    font-size: 1.4rem;
+    line-height: 2.2rem;
+    height: 120px;
+    overflow: hidden;
+    user-select: none;
+}
 
-.support-link { margin-top: 15px; font-size: 0.85rem; color: #94a3b8; text-align: center; }
-.support-link a { color: #5865F2; text-decoration: none; font-weight: bold; }
+.word {
+    display: inline-block;
+    margin-right: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+}
 
-/* Responsive điện thoại */
-@media (max-width: 600px) {
-    .app-wrap { padding: 0 10px; margin: 10px auto; }
-    .card { padding: 15px; }
-    .words-display { font-size: 1.1rem; }
-    .nav-container { padding: 0 10px; }
-    .logo { font-size: 1rem; }
+.word.active {
+    background-color: var(--word-active);
+    color: #fff;
+}
+
+.letter.correct { color: var(--correct); }
+.letter.incorrect { color: var(--incorrect); background-color: rgba(248, 113, 113, 0.2); }
+
+/* INPUT & BUTTONS */
+.typing-input {
+    background-color: #101216;
+    border: 1px solid var(--card-border);
+    color: #fff;
+    font-size: 1.1rem;
+    padding: 12px 16px;
+    border-radius: 8px;
+}
+
+.typing-input:focus {
+    background-color: #101216;
+    color: #fff;
+    border-color: var(--primary-purple);
+    box-shadow: none;
+}
+
+.btn-reload {
+    background-color: var(--card-border);
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-reload:hover {
+    background-color: #383c4d;
+    color: #fff;
+}
+
+/* BẢNG KẾT QUẢ */
+.result-card {
+    background: linear-gradient(135deg, #1e1b4b 0%, #171723 100%);
+    border: 1px solid var(--primary-purple);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+}
+
+.res-val {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* MODAL & TABLES */
+.modal-content {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: #fff;
+}
+
+.form-control, .form-select {
+    background-color: #101216;
+    border-color: var(--card-border);
+    color: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #101216;
+    color: #fff;
+    border-color: var(--primary-purple);
+}
+
+.table-dark {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--card-border);
 }
