@@ -1,14 +1,28 @@
 const API_BASE = "/api";
 
 const wordListVi = [
-    "công", "nghệ", "thông", "tin", "lập", "trình", "máy", "tính", "bàn", "phím", "chuột", "màn", "hình", 
-    "tai", "nghe", "học", "sinh", "sinh", "viên", "trường", "lớp", "thầy", "cô", "sách", "vở", "bút", "thước", 
-    "nhà", "xe", "máy", "điện", "thoại", "mạng", "xã", "hội", "báo", "chí", "phát", "triển", "phần", "mềm"
+    "như", "người", "sẽ", "được", "không", "có", "trong", "với", "những", "cho",
+    "đã", "về", "cũng", "đến", "các", "nhiều", "hơn", "nhà", "khi", "ngày",
+    "lại", "này", "ra", "phải", "một", "rất", "thì", "mà", "làm", "đi",
+    "còn", "nên", "từ", "đó", "theo", "vào", "ở", "để", "bạn", "mình",
+    "chúng", "ta", "họ", "anh", "chị", "em", "ông", "bà", "cha", "mẹ",
+    "con", "cửa", "phòng", "bàn", "ghế", "sách", "trường", "lớp", "thầy",
+    "cô", "việc", "thời", "gian", "hôm", "nay", "mai", "sáng",
+    "trưa", "tối", "đêm", "mưa", "nắng", "gió", "trời", "đường", "xe", "điện",
+    "nước", "cơm", "ăn", "uống", "ngủ", "chơi", "đẹp", "xấu", "nhanh", "chậm",
+    "lớn", "nhỏ", "mới", "cũ", "tốt", "vui", "buồn", "thích", "yêu", "muốn"
 ];
 
 const wordListEn = [
-    "technology", "computer", "keyboard", "mouse", "screen", "developer", "software", "hardware", 
-    "program", "code", "data", "system", "network", "internet", "website", "application", "mobile"
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
+    "this", "but", "his", "by", "from", "they", "we", "say", "her",
+    "she", "or", "an", "will", "my", "one", "all", "would", "there", "their",
+    "what", "so", "up", "out", "if", "about", "who", "get", "which", "go",
+    "me", "when", "make", "can", "like", "time", "no", "just", "him", "know",
+    "take", "people", "good", "new", "want", "day", "look", "come", "back",
+    "think", "see", "well", "way", "here", "thing", "give", "more", "some",
+    "very", "after"
 ];
 
 let words = [], currentWordIndex = 0, correctCount = 0, incorrectCount = 0;
