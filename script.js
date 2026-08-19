@@ -1,20 +1,26 @@
 const API_URL = "/api/index";
 
-// KHO TỪ VỰNG DÀNH CHO CẢ 2 NGÔN NGỮ
+// KHO TỪ VỰNG NGẪU NHIÊN PHONG PHÚ
 const WORDS_DATABASE = {
     vi: [
-        "các", "người", "một", "thế", "lại", "có", "ra", "thế", "xem", "biết", "trong", "này", "về",
+        "các", "người", "một", "thế", "lại", "có", "ra", "xem", "biết", "trong", "này", "về",
         "cùng", "rất", "nhiều", "mình", "nên", "đất", "anh", "đang", "sẽ", "chỉ", "khi", "đó", "cho",
-        "được", "không", "như", "đã", "với", "việc", "ngày", "làm", "phải", "đến", "sự", "từ"
+        "được", "không", "như", "đã", "với", "việc", "ngày", "làm", "phải", "đến", "sự", "từ",
+        "nhà", "nói", "mới", "hơn", "vào", "năm", "theo", "sau", "đều", "bị", "đi", "để", "bằng",
+        "khác", "bộ", "cũng", "hoặc", "trên", "mấy", "qua", "trước", "ông", "tôi", "tay", "trời",
+        "dùng", "sống", "nghe", "nhìn", "chạy", "học", "chơi", "hiểu", "nghĩ", "yêu", "viết", "đọc"
     ],
     en: [
         "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
         "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her",
-        "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up"
+        "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up",
+        "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time",
+        "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could",
+        "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think"
     ]
 };
 
-// BỘ TỪ ĐIỂN DỊCH GIAO DIỆN
+// DỊCH GIAO DIỆN
 const TRANSLATIONS = {
     vi: {
         tabGame: '<i class="fa-solid fa-bolt me-2"></i>Kiểm Tra Gõ Phím',
@@ -33,6 +39,7 @@ const TRANSLATIONS = {
         thPlayer: "Người chơi",
         thSpeed: "Tốc độ (WPM)",
         thAcc: "Độ chính xác",
+        lblMyRankTag: "Thứ hạng của bạn",
         btnLogin: "Đăng Nhập",
         btnLogout: "Thoát",
         modalLoginTitle: "Đăng Nhập",
@@ -44,13 +51,13 @@ const TRANSLATIONS = {
         lblRegPass: "Mật khẩu",
         msgNoAcc: 'Chưa có tài khoản? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Đăng ký ngay</a>',
         profileGuest: 'Vui lòng <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Đăng nhập</a> để xem thông tin hồ sơ.',
-        profTitle: "Thông Tin Cá Nhân & Thành Tích",
         profHighscore: "Tốc độ cao nhất",
         profAvgAcc: "Độ chính xác TB",
-        profTotalTests: "Bài test đã hoàn thành",
+        profTotalTests: "Bài test đã làm",
+        profJoinedDate: "Ngày đăng ký",
         profHistoryTitle: "Lịch Sử Luyện Tập",
         profDate: "Thời gian",
-        profLoading: "Đang tải dữ liệu hồ sơ..."
+        profLoading: "Đang tải dữ liệu..."
     },
     en: {
         tabGame: '<i class="fa-solid fa-bolt me-2"></i>Typing Test',
@@ -69,6 +76,7 @@ const TRANSLATIONS = {
         thPlayer: "Player",
         thSpeed: "Speed (WPM)",
         thAcc: "Accuracy",
+        lblMyRankTag: "Your Rank",
         btnLogin: "Log In",
         btnLogout: "Log Out",
         modalLoginTitle: "Log In",
@@ -80,13 +88,13 @@ const TRANSLATIONS = {
         lblRegPass: "Password",
         msgNoAcc: 'Don\'t have an account? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register now</a>',
         profileGuest: 'Please <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Log in</a> to view your profile.',
-        profTitle: "User Profile & Statistics",
         profHighscore: "Highest Speed",
         profAvgAcc: "Avg. Accuracy",
         profTotalTests: "Tests Completed",
+        profJoinedDate: "Joined Date",
         profHistoryTitle: "Practice History",
         profDate: "Date",
-        profLoading: "Loading profile data..."
+        profLoading: "Loading..."
     }
 };
 
@@ -108,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("inputField").addEventListener("input", handleInput);
 });
 
-// 1. ĐỔI NGÔN NGỮ
+// 1. CHUYỂN ĐỔI NGÔN NGỮ
 function changeLanguage() {
     currentLang = document.getElementById("langSelect").value;
     const t = TRANSLATIONS[currentLang];
@@ -127,6 +135,7 @@ function changeLanguage() {
     document.getElementById("thPlayer").innerText = t.thPlayer;
     document.getElementById("thSpeed").innerText = t.thSpeed;
     document.getElementById("thAcc").innerText = t.thAcc;
+    document.getElementById("lblMyRankTag").innerText = t.lblMyRankTag;
     document.getElementById("modalLoginTitle").innerText = t.modalLoginTitle;
     document.getElementById("modalRegTitle").innerText = t.modalRegTitle;
     document.getElementById("lblUser").innerText = t.lblUser;
@@ -154,7 +163,7 @@ function switchTab(tabName) {
     if (tabName === 'profile') renderProfile();
 }
 
-// 3. TÀI KHOẢN & HỒ SƠ
+// 3. XỬ LÝ TÀI KHOẢN
 function updateAuthUI() {
     const authNav = document.getElementById("authNav");
     const t = TRANSLATIONS[currentLang];
@@ -222,9 +231,10 @@ function logout() {
     currentUser = null;
     updateAuthUI();
     renderProfile();
+    document.getElementById("myRankBox").classList.add("d-none");
 }
 
-// RENDER CHI TIẾT HỒ SƠ VÀ LỊCH SỬ BÀI TEST
+// 4. HỒ SƠ TÀI KHOẢN
 async function renderProfile() {
     const p = document.getElementById("profileContent");
     const t = TRANSLATIONS[currentLang];
@@ -270,7 +280,8 @@ async function renderProfile() {
                 </div>
                 <div>
                     <h5 class="fw-bold mb-0">${userData.username}</h5>
-                    <small class="text-muted">${userData.email || 'Chưa cập nhật Email'}</small>
+                    <small class="text-muted d-block">${userData.email || 'Chưa cập nhật Email'}</small>
+                    <small class="text-info" style="font-size: 0.8rem;"><i class="fa-regular fa-calendar-check me-1"></i>${t.profJoinedDate}: ${userData.created_at || 'Mới đây'}</small>
                 </div>
             </div>
             <button class="btn btn-sm btn-outline-danger" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-1"></i>${t.btnLogout}</button>
@@ -315,7 +326,55 @@ async function renderProfile() {
     `;
 }
 
-// 4. LOGIC GAME GÕ PHÍM
+// 5. BẢNG XẾP HẠNG
+async function loadLeaderboard() {
+    const res = await fetch(`${API_URL}?action=get_leaderboard`);
+    const list = await res.json();
+    const tbody = document.getElementById("leaderboardBody");
+    tbody.innerHTML = "";
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">Chưa có dữ liệu</td></tr>`;
+        return;
+    }
+
+    const top100 = list.slice(0, 100);
+
+    top100.forEach((u, i) => {
+        const rankDisplay = (i + 1) > 100 ? "100+" : (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1);
+
+        tbody.innerHTML += `
+            <tr ${currentUser && u.id === currentUser.id ? 'class="table-active border-start border-primary border-4"' : ''}>
+                <td>${rankDisplay}</td>
+                <td>${u.country || "🇻🇳"} ${u.username}</td>
+                <td class="text-end text-warning fw-bold">${u.max_wpm || 0}</td>
+                <td class="text-end text-info">${u.accuracy || 100}%</td>
+            </tr>
+        `;
+    });
+
+    if (currentUser) {
+        const userIndex = list.findIndex(u => u.id === currentUser.id);
+        const myRankBox = document.getElementById("myRankBox");
+        
+        if (userIndex !== -1) {
+            const actualRank = userIndex + 1;
+            const rankStr = actualRank > 100 ? "100+" : `#${actualRank}`;
+            
+            document.getElementById("myRankUsername").innerText = currentUser.username;
+            document.getElementById("myRankValue").innerText = rankStr;
+            document.getElementById("myRankWpm").innerText = `${list[userIndex].max_wpm || 0} WPM`;
+            myRankBox.classList.remove("d-none");
+        } else {
+            document.getElementById("myRankUsername").innerText = currentUser.username;
+            document.getElementById("myRankValue").innerText = "Chưa có rank";
+            document.getElementById("myRankWpm").innerText = "0 WPM";
+            myRankBox.classList.remove("d-none");
+        }
+    }
+}
+
+// 6. LOGIC GAME
 function resetTest() {
     clearInterval(timer);
     isStarted = false;
@@ -422,28 +481,4 @@ async function endTest() {
     } else {
         document.getElementById("resMsg").innerText = t.resGuestMsg;
     }
-}
-
-// 5. LOAD BẢNG XẾP HẠNG
-async function loadLeaderboard() {
-    const res = await fetch(`${API_URL}?action=get_leaderboard`);
-    const list = await res.json();
-    const tbody = document.getElementById("leaderboardBody");
-    tbody.innerHTML = "";
-
-    if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-muted">Chưa có dữ liệu</td></tr>`;
-        return;
-    }
-
-    list.forEach((u, i) => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
-                <td>${u.country || "🇻🇳"} ${u.username}</td>
-                <td class="text-end text-warning fw-bold">${u.max_wpm || 0}</td>
-                <td class="text-end text-info">${u.accuracy || 100}%</td>
-            </tr>
-        `;
-    });
 }
