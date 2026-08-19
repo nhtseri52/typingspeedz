@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TypingSpeed - Luyện Gõ Phím</title>
+
+    <!-- GOOGLE ADSENSE VERIFICATION META TAG -->
+    <meta name="google-adsense-account" content="ca-pub-2159939441444456">
+
+    <!-- GOOGLE ADSENSE SCRIPT -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2159939441444456" crossorigin="anonymous"></script>
+
     <!-- Bootstrap 5 CSS & FontAwesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,7 +30,7 @@
                     <option value="vi">🇻🇳 Tiếng Việt</option>
                     <option value="en">🇺🇸 English</option>
                 </select>
-                <!-- Link Discord cập nhật chuẩn -->
+                <!-- Link Discord -->
                 <a href="https://discord.gg/5v99BEQgEz" target="_blank" class="btn btn-sm text-white" style="background-color: #5865F2;">
                     <i class="fa-brands fa-discord me-1"></i> Discord
                 </a>
@@ -83,6 +90,21 @@
         <div id="tab-leaderboard" class="tab-content d-none">
             <div class="game-card">
                 <h5 class="fw-bold mb-3" id="titleBoard"><i class="fa-solid fa-trophy text-warning me-2"></i>Bảng Xếp Hạng Top 100</h5>
+                
+                <!-- KHUNG HIỂN THỊ THỨ HẠNG CỦA TÔI -->
+                <div id="myRankBox" class="p-3 mb-3 rounded d-none" style="background-color: #1a1e24; border: 1px solid var(--primary-purple);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-2" id="lblMyRankTag">Thứ hạng của bạn</span>
+                            <span class="fw-bold text-light" id="myRankUsername">---</span>
+                        </div>
+                        <div>
+                            <span class="fs-5 fw-bold text-warning me-3" id="myRankValue">#--</span>
+                            <span class="text-info fw-bold" id="myRankWpm">0 WPM</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table table-dark table-hover align-middle">
                         <thead>
