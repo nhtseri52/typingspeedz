@@ -1,0 +1,1 @@
+(()=>{const c=window.TYPING_CONFIG||{};const ok=c.SUPABASE_URL&&!c.SUPABASE_URL.includes("YOUR-PROJECT")&&c.SUPABASE_ANON_KEY&&!c.SUPABASE_ANON_KEY.includes("YOUR_");window.SUPABASE_READY=!!ok;window.db=ok?supabase.createClient(c.SUPABASE_URL,c.SUPABASE_ANON_KEY):null})();
